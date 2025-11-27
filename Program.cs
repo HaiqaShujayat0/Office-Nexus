@@ -30,7 +30,7 @@ using (var scope = app.Services.CreateScope())
     if (!db.Users.Any(u => u.Role == UserRole.Admin))
     {
         // CREATE DEFAULT ADMIN
-        // Password is "admin123"
+        // Password is "admin123", Security Code is "ADMIN2024"
         string passwordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
         
         db.Users.Add(new User 
@@ -38,7 +38,11 @@ using (var scope = app.Services.CreateScope())
             FullName = "System Administrator", 
             Email = "admin@officenexus.com", 
             PasswordHash = passwordHash, 
-            Role = UserRole.Admin 
+            Role = UserRole.Admin,
+            SecurityCode = "ADMIN2024",
+            JobTitle = "System Administrator",
+            Department = "IT",
+            BasicSalary = 50000
         });
         db.SaveChanges();
     }

@@ -27,6 +27,19 @@ namespace OfficeNexus.Data
         public UserRole Role { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // --- Enhanced Fields for Office Automation ---
+        
+        [Required]
+        public string JobTitle { get; set; } = "Employee";
+        
+        public string Department { get; set; } = "General";
+        
+        // For Payroll calculation
+        public decimal BasicSalary { get; set; } = 0;
+        
+        // Security Code - Only for Admin users (nullable for employees)
+        public string? SecurityCode { get; set; }
     }
 
     public class VisitorLog

@@ -16,9 +16,31 @@ namespace OfficeNexus.Controllers
             _context = context;
         }
 
+        public async Task<IActionResult> Dashboard()
+        {
+            var userIdStr = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdStr)) return RedirectToAction("Login", "Auth");
+
+            var userId = int.Parse(userIdStr);
+            var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+            
+            var stats = new
+            {
+                VisitorsToday = await _context.VisitorLogs.CountAsync(v => v.EmployeeId == userId && v.TimeIn.Date == DateTime.Today),
+                VisitorsWeek = await _context.VisitorLogs.CountAsync(v => v.EmployeeId == userId && v.TimeIn >= startOfWeek),
+                TotalVisitors = await _context.VisitorLogs.CountAsync(v => v.EmployeeId == userId),
+                RecentLogs = await _context.VisitorLogs
+                    .Where(v => v.EmployeeId == userId)
+                    .OrderByDescending(v => v.TimeIn)
+                    .Take(5)
+                    .ToListAsync()
+            };
+            
+            return View(stats);
+        }
+
         public async Task<IActionResult> Index()
         {
-            // FIXED: Added check for null using ?? "0"
             var userIdStr = User.FindFirstValue("UserId");
             if (string.IsNullOrEmpty(userIdStr)) return RedirectToAction("Login", "Auth");
 
@@ -28,16 +50,20 @@ namespace OfficeNexus.Controllers
             var myLogs = await _context.VisitorLogs
                 .Where(v => v.EmployeeId == userId)
                 .OrderByDescending(v => v.TimeIn)
-                .Take(20)
+                .Take(50)
                 .ToListAsync();
 
             return View(myLogs);
         }
 
+        public IActionResult Profile()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<IActionResult> LogVisitor(VisitorLog model)
         {
-            // FIXED: Added check for null
             var userIdStr = User.FindFirstValue("UserId");
             if (string.IsNullOrEmpty(userIdStr)) return RedirectToAction("Login", "Auth");
 
@@ -49,6 +75,7 @@ namespace OfficeNexus.Controllers
             _context.VisitorLogs.Add(model);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Visitor logged successfully!";
             return RedirectToAction("Index");
         }
 
@@ -60,6 +87,7 @@ namespace OfficeNexus.Controllers
              {
                  log.TimeOut = DateTime.Now;
                  await _context.SaveChangesAsync();
+                 TempData["Success"] = "Visitor checked out successfully!";
              }
              return RedirectToAction("Index");
         }

@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="space-y-6">
+    
+    <!-- Header -->
+    <div>
+        <h2 class="text-2xl font-bold text-slate-900">System Settings</h2>
+        <p class="mt-1 text-sm text-slate-500">Configure your OfficeNexus system</p>
+    </div>
+
+    <!-- Coming Soon Banner -->
+    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg p-8 text-white text-center">
+        <svg class="mx-auto h-16 w-16 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <h3 class="mt-4 text-2xl font-bold">Settings Module Coming Soon</h3>
+        <p class="mt-2 text-indigo-100">System configuration options are under development</p>
+    </div>
+
+    <!-- Planned Settings -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900">Organization Settings</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-slate-600">
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Company name and logo
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Office locations
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Working hours
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900">Security Settings</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-slate-600">
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Password policies
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Session timeout
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Two-factor authentication
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900">Notifications</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-slate-600">
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Email notifications
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Alert preferences
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Notification frequency
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900">Data Management</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-slate-600">
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Backup settings
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Data retention policies
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    Export/Import data
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
+        <div class="flex flex-wrap gap-3">
+            <a asp-action="Index" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>

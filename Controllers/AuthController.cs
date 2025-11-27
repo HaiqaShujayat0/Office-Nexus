@@ -26,7 +26,7 @@ namespace OfficeNexus.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(string email, string password)
+        public async Task<IActionResult> Login(string email, string password, string? securityCode)
         {
             var user = _context.Users.FirstOrDefault(u => u.Email == email);
 
@@ -34,6 +34,26 @@ namespace OfficeNexus.Controllers
             {
                 ViewBag.Error = "Invalid credentials.";
                 return View();
+            }
+
+            // Enhanced Security: Admin users must provide SecurityCode
+            if (user.Role == UserRole.Admin)
+            {
+                if (string.IsNullOrEmpty(securityCode))
+                {
+                    ViewBag.Error = "Security Code is required for Admin login.";
+                    ViewBag.ShowSecurityCode = true;
+                    ViewBag.Email = email;
+                    return View();
+                }
+
+                if (user.SecurityCode != securityCode)
+                {
+                    ViewBag.Error = "Invalid Security Code.";
+                    ViewBag.ShowSecurityCode = true;
+                    ViewBag.Email = email;
+                    return View();
+                }
             }
 
             // Create User Session
@@ -71,7 +91,7 @@ namespace OfficeNexus.Controllers
 
             return role == UserRole.Admin 
                 ? RedirectToAction("Index", "Admin") 
-                : RedirectToAction("Index", "Employee");
+                : RedirectToAction("Dashboard", "Employee");
         }
     }
 }
