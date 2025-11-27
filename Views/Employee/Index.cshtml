@@ -1,0 +1,114 @@
+@model IEnumerable<OfficeNexus.Data.VisitorLog>
+
+@{
+    ViewData["Title"] = "Employee Workspace";
+}
+
+<div class="space-y-6" x-data="{ openForm: false }">
+    
+    <div class="flex justify-between items-end">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Visitor Logs</h2>
+            <p class="text-slate-500 text-sm">Track daily office visits and check-ins.</p>
+        </div>
+        <button type="button" x-on:click="openForm = !openForm" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+            <span x-text="openForm ? 'Close Form' : 'New Visitor'"></span>
+        </button>
+    </div>
+
+    <div x-show="openForm" x-cloak x-transition class="bg-white border border-indigo-100 rounded-xl shadow-lg p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <svg class="w-32 h-32 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" /></svg>
+        </div>
+        
+        <h3 class="text-lg font-medium text-slate-900 mb-4">Log New Visit</h3>
+        <form asp-action="LogVisitor" method="POST" class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+            
+            <div class="sm:col-span-3">
+                <label class="block text-sm font-medium text-slate-700">Visitor Name</label>
+                <div class="mt-1">
+                    <input type="text" name="VisitorName" required class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-md p-2 border">
+                </div>
+            </div>
+
+            <div class="sm:col-span-3">
+                <label class="block text-sm font-medium text-slate-700">Visitor Type</label>
+                <div class="mt-1">
+                    <select name="VisitorType" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-md p-2 border">
+                        <option value="Outsider">Outsider (Client/Guest)</option>
+                        <option value="Internal">Internal (Other Branch)</option>
+                        <option value="Interview">Candidate</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="sm:col-span-6">
+                <label class="block text-sm font-medium text-slate-700">Purpose of Visit</label>
+                <div class="mt-1">
+                    <input type="text" name="Purpose" required placeholder="e.g. Meeting regarding Project X" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-md p-2 border">
+                </div>
+            </div>
+
+            <div class="sm:col-span-6 flex justify-end">
+                <button type="submit" class="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Save Record
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-white shadow-sm rounded-xl border border-slate-100 overflow-hidden">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Visitor</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Purpose</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Time In</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="relative px-6 py-3"><span class="sr-only">Checkout</span></th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-200">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                            @item.VisitorName
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            @item.Purpose
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @(item.VisitorType == "Outsider" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800")">
+                                @item.VisitorType
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            @item.TimeIn.ToString("g")
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if(item.TimeOut == null)
+                            {
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">On Premise</span>
+                            }
+                            else
+                            {
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-100 text-slate-800">Left @item.TimeOut?.ToString("t")</span>
+                            }
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            @if(item.TimeOut == null)
+                            {
+                                <form asp-action="Checkout" method="post" class="inline">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="text-indigo-600 hover:text-indigo-900">Check Out</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

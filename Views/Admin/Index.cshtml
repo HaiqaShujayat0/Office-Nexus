@@ -1,0 +1,102 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-slate-900 sm:text-3xl sm:truncate">Admin Dashboard</h2>
+            <p class="text-slate-500 mt-1">Manage users and oversee office metrics.</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-slate-100 p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-indigo-50 rounded-md p-3">
+                    <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-slate-500 truncate">Total Employees</dt>
+                        <dd class="text-2xl font-semibold text-slate-900">@Model.TotalEmployees</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-slate-100 p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-green-50 rounded-md p-3">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-slate-500 truncate">Visitors Today</dt>
+                        <dd class="text-2xl font-semibold text-slate-900">@Model.TotalVisitorsToday</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Add Employee Form -->
+        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
+            <h3 class="text-lg leading-6 font-medium text-slate-900 mb-4">Register New Employee</h3>
+            
+            @if (TempData["Success"] != null) { <p class="text-green-600 text-sm mb-4">@TempData["Success"]</p> }
+            @if (TempData["Error"] != null) { <p class="text-red-600 text-sm mb-4">@TempData["Error"]</p> }
+
+            <form asp-action="AddEmployee" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Full Name</label>
+                    <input type="text" name="fullName" required class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" name="email" required class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Default Password</label>
+                    <input type="password" name="password" required class="mt-1 block w-full border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border p-2">
+                </div>
+                <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create Account
+                </button>
+            </form>
+        </div>
+
+        <!-- Employee List -->
+        <div class="lg:col-span-2 bg-white shadow-sm rounded-xl border border-slate-100 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100">
+                <h3 class="text-lg leading-6 font-medium text-slate-900">Registered Employees</h3>
+            </div>
+            <ul role="list" class="divide-y divide-slate-100">
+                @foreach(var emp in Model.Employees)
+                {
+                    <li class="px-6 py-4 flex items-center justify-between hover:bg-slate-50">
+                        <div>
+                            <p class="text-sm font-medium text-indigo-600">@emp.FullName</p>
+                            <p class="text-sm text-slate-500">@emp.Email</p>
+                        </div>
+                        <div>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Active
+                            </span>
+                        </div>
+                    </li>
+                }
+                @if(Model.Employees.Count == 0)
+                {
+                    <li class="px-6 py-4 text-sm text-slate-500">No employees found.</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
