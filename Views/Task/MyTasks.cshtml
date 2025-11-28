@@ -1,0 +1,195 @@
+@model IEnumerable<OfficeNexus.Models.TaskItem>
+
+@{
+    ViewData["Title"] = "My Tasks";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+}
+
+<div class="space-y-6">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl shadow-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold">My Tasks 📋</h2>
+                <p class="mt-1 text-blue-100">Track and manage your assigned tasks</p>
+            </div>
+            <div class="hidden md:block">
+                <div class="text-right">
+                    <p class="text-3xl font-bold">@Model.Count()</p>
+                    <p class="text-blue-100 text-sm">Total Tasks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-100 p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                    <span class="text-2xl">📝</span>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-slate-900">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.ToDo)</p>
+                    <p class="text-xs text-slate-500">To Do</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-slate-100 p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <span class="text-2xl">⚡</span>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-blue-600">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress)</p>
+                    <p class="text-xs text-slate-500">In Progress</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-slate-100 p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span class="text-2xl">👀</span>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-yellow-600">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview)</p>
+                    <p class="text-xs text-slate-500">In Review</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-slate-100 p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <span class="text-2xl">✅</span>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-green-600">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.Done)</p>
+                    <p class="text-xs text-slate-500">Completed</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <h3 class="text-lg font-bold text-slate-900">All Tasks</h3>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="divide-y divide-slate-100">
+                @foreach (var task in Model)
+                {
+                    var priorityColors = new Dictionary<OfficeNexus.Models.TaskPriority, string>
+                    {
+                        { OfficeNexus.Models.TaskPriority.Low, "bg-slate-100 text-slate-700" },
+                        { OfficeNexus.Models.TaskPriority.Medium, "bg-blue-100 text-blue-700" },
+                        { OfficeNexus.Models.TaskPriority.High, "bg-orange-100 text-orange-700" },
+                        { OfficeNexus.Models.TaskPriority.Critical, "bg-red-100 text-red-700" }
+                    };
+
+                    var statusColors = new Dictionary<OfficeNexus.Models.TaskWorkflowStatus, string>
+                    {
+                        { OfficeNexus.Models.TaskWorkflowStatus.ToDo, "bg-slate-100 text-slate-700" },
+                        { OfficeNexus.Models.TaskWorkflowStatus.InProgress, "bg-blue-100 text-blue-700" },
+                        { OfficeNexus.Models.TaskWorkflowStatus.InReview, "bg-yellow-100 text-yellow-700" },
+                        { OfficeNexus.Models.TaskWorkflowStatus.Done, "bg-green-100 text-green-700" }
+                    };
+
+                    var isOverdue = task.DueDate < DateTime.Now && task.Status != OfficeNexus.Models.TaskWorkflowStatus.Done;
+
+                    <div class="p-6 hover:bg-slate-50 transition-colors cursor-pointer" 
+                         onclick="window.location.href='@Url.Action("Details", "Task", new { id = task.Id })'">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h4 class="font-semibold text-slate-900 text-lg">@task.Title</h4>
+                                    @if (!string.IsNullOrEmpty(task.AttachmentPath))
+                                    {
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                        </svg>
+                                    }
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(task.Description))
+                                {
+                                    <p class="text-slate-600 text-sm mb-3 line-clamp-2">@task.Description</p>
+                                }
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold @priorityColors[task.Priority]">
+                                        @task.Priority
+                                    </span>
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold @statusColors[task.Status]">
+                                        @task.Status
+                                    </span>
+                                    <span class="text-xs text-slate-500 flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        Due: @task.DueDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                    @if (isOverdue)
+                                    {
+                                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
+                                            Overdue
+                                        </span>
+                                    }
+                                    @if (task.Comments.Any())
+                                    {
+                                        <span class="text-xs text-slate-500 flex items-center gap-1">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                            </svg>
+                                            @task.Comments.Count
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="flex-shrink-0">
+                                <a href="@Url.Action("Details", "Task", new { id = task.Id })" 
+                                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all text-sm">
+                                    View Details
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="p-12 text-center">
+                <svg class="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <h3 class="text-lg font-semibold text-slate-600 mb-2">No Tasks Assigned</h3>
+                <p class="text-slate-500">You don't have any tasks assigned yet. Check back later!</p>
+            </div>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+        @TempData["Success"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+        @TempData["Error"]
+    </div>
+}

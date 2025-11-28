@@ -1,0 +1,143 @@
+@model OfficeNexus.Models.TaskItem
+
+@{
+    ViewData["Title"] = "Edit Task";
+}
+
+<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="@Url.Action("Index", "Task")" 
+               class="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back to Tasks
+            </a>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-600 p-6 text-white">
+                <h1 class="text-2xl font-bold">Edit Task</h1>
+                <p class="text-blue-100 mt-1">Update task details and settings</p>
+            </div>
+
+            <form asp-action="Edit" method="post" enctype="multipart/form-data" class="p-6 space-y-5">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedByAdminId" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <input type="hidden" asp-for="AttachmentPath" />
+                <input type="hidden" asp-for="AttachmentFileName" />
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Task Title *</label>
+                    <input type="text" asp-for="Title" required maxlength="200"
+                           class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                           placeholder="Enter task title">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                    <textarea asp-for="Description" rows="4" maxlength="2000"
+                              class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                              placeholder="Enter task description"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Assign To *</label>
+                        <select asp-for="AssignedToUserId" required
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            <option value="">Select Employee</option>
+                            @foreach (var employee in ViewBag.Employees)
+                            {
+                                <option value="@employee.Id">@employee.FullName - @employee.Department</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Priority *</label>
+                        <select asp-for="Priority" required
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                            <option value="3">Critical</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Status *</label>
+                        <select asp-for="Status" required
+                                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            <option value="0">To Do</option>
+                            <option value="1">In Progress</option>
+                            <option value="2">In Review</option>
+                            <option value="3">Done</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Due Date *</label>
+                        <input type="date" asp-for="DueDate" required
+                               class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    </div>
+                </div>
+
+                <!-- Current Attachment -->
+                @if (!string.IsNullOrEmpty(Model.AttachmentPath))
+                {
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-blue-900 mb-2">Current Attachment</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                </svg>
+                                <span class="text-blue-900 font-medium">@(Model.AttachmentFileName ?? "Attachment")</span>
+                            </div>
+                            <a href="@Url.Action("DownloadAttachment", "Task", new { id = Model.Id })" 
+                               class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
+                                Download
+                            </a>
+                        </div>
+                        <p class="text-xs text-blue-700 mt-2">Upload a new file below to replace this attachment</p>
+                    </div>
+                }
+
+                <!-- New Attachment Upload -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        @(string.IsNullOrEmpty(Model.AttachmentPath) ? "Attachment (Optional)" : "Replace Attachment (Optional)")
+                    </label>
+                    <input type="file" name="attachmentFile" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                           class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    <p class="text-xs text-slate-500 mt-1">Max file size: 10MB. Allowed: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG</p>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-200">
+                    <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                        Update Task
+                    </button>
+                    <a href="@Url.Action("Index", "Task")"
+                       class="px-8 py-3 border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-all text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        @TempData["Error"]
+    </div>
+}

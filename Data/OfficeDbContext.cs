@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using OfficeNexus.Models;
 
 namespace OfficeNexus.Data
 {
@@ -71,6 +72,9 @@ namespace OfficeNexus.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<VisitorLog> VisitorLogs { get; set; }
+        public DbSet<TaskItem> TaskItems { get; set; }
+        public DbSet<TaskComment> TaskComments { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
