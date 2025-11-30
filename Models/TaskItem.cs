@@ -45,6 +45,12 @@ namespace OfficeNexus.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? CompletedAt { get; set; }
+        public DateTime? SubmittedAt { get; set; } // When employee submitted for review
+        
+        // Admin Review Tracking
+        public DateTime? ReviewedAt { get; set; } // When admin marked as done
+        public int? ReviewedByAdminId { get; set; } // Which admin reviewed
+        public bool IsArchived { get; set; } = false; // For history/archive functionality
 
         // Foreign Keys
         [Required]
@@ -61,5 +67,8 @@ namespace OfficeNexus.Models
 
         // Tier 2: Relationship to Comments
         public virtual ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
+
+        // Tier 3: Submissions (Multiple files)
+        public virtual ICollection<TaskSubmission> Submissions { get; set; } = new List<TaskSubmission>();
     }
 }

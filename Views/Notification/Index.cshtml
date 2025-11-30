@@ -1,0 +1,114 @@
+@model IEnumerable<OfficeNexus.Models.Notification>
+
+@{
+    ViewData["Title"] = "All Notifications";
+    var userRole = User.FindFirst("Role")?.Value;
+    Layout = userRole == "Admin" ? "~/Views/Shared/_AdminLayout.cshtml" : "~/Views/Shared/_EmployeeLayout.cshtml";
+}
+
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900">All Notifications</h2>
+        <p class="mt-1 text-sm text-slate-500">View all your notifications and alerts</p>
+    </div>
+
+    <!-- Notifications List -->
+    <div class="bg-white shadow-lg rounded-xl border border-slate-100 overflow-hidden">
+        @if (Model.Any())
+        {
+            <div class="divide-y divide-slate-200">
+                @foreach (var notification in Model)
+                {
+                    <div class="px-6 py-4 hover:bg-slate-50 transition-colors @(notification.IsRead ? "bg-white" : "bg-blue-50")">
+                        <div class="flex items-start gap-4">
+                            <!-- Icon based on type -->
+                            @switch (notification.Type)
+                            {
+                                case OfficeNexus.Models.NotificationType.Success:
+                                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    break;
+                                case OfficeNexus.Models.NotificationType.Warning:
+                                    <div class="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    break;
+                                case OfficeNexus.Models.NotificationType.Alert:
+                                    <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    break;
+                                default:
+                                    <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    break;
+                            }
+                            
+                            <!-- Content -->
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-slate-900 @(notification.IsRead ? "" : "font-semibold")">
+                                    @notification.Message
+                                </p>
+                                <p class="text-xs text-slate-500 mt-1">
+                                    @notification.CreatedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")
+                                </p>
+                                
+                                @if (!string.IsNullOrEmpty(notification.Link))
+                                {
+                                    <a href="@notification.Link" 
+                                       onclick="markAsRead(@notification.Id)"
+                                       class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 hover:text-blue-700">
+                                        View Details
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                }
+                            </div>
+
+                            <!-- Unread indicator -->
+                            @if (!notification.IsRead)
+                            {
+                                <div class="flex-shrink-0">
+                                    <span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-full"></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12">
+                <svg class="mx-auto h-16 w-16 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <h3 class="mt-4 text-sm font-medium text-slate-900">No notifications</h3>
+                <p class="mt-1 text-sm text-slate-500">You're all caught up!</p>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function markAsRead(notificationId) {
+        fetch('/Notification/MarkAsRead?id=' + notificationId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    }
+</script>

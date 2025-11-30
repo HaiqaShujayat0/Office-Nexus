@@ -23,8 +23,68 @@
             </button>
         </div>
 
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-slate-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-600 font-semibold">Total Active</p>
+                        <p class="text-2xl font-bold text-slate-900">@Model.Count(t => t.Status != OfficeNexus.Models.TaskWorkflowStatus.Done && !t.IsArchived)</p>
+                    </div>
+                    <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-yellow-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-yellow-700 font-semibold">Needs Review</p>
+                        <p class="text-2xl font-bold text-yellow-900">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview && !t.IsArchived)</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-blue-700 font-semibold">In Progress</p>
+                        <p class="text-2xl font-bold text-blue-900">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress && !t.IsArchived)</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-4 border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-green-700 font-semibold">Completed Today</p>
+                        <p class="text-2xl font-bold text-green-900">@Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.Done && !t.IsArchived && t.CompletedAt.HasValue && t.CompletedAt.Value.Date == DateTime.Today)</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Kanban Board -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             <!-- ToDo Column -->
             <div class="bg-white rounded-xl shadow-lg border-t-4 border-slate-400">
@@ -33,14 +93,29 @@
                         <span class="w-3 h-3 bg-slate-400 rounded-full mr-2"></span>
                         To Do
                         <span class="ml-auto bg-slate-100 text-slate-700 px-2 py-1 rounded-full text-xs font-semibold">
-                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.ToDo)
+                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.ToDo && !t.IsArchived)
                         </span>
                     </h3>
                 </div>
                 <div class="p-3 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-                    @foreach (var task in Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.ToDo))
+                    @{
+                        var todoTasks = Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.ToDo && !t.IsArchived).ToList();
+                    }
+                    @if (todoTasks.Any())
                     {
-                        @await Html.PartialAsync("_TaskCard", task)
+                        foreach (var task in todoTasks)
+                        {
+                            @await Html.PartialAsync("_TaskCard", task)
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            <p class="text-sm font-semibold">No tasks to do</p>
+                        </div>
                     }
                 </div>
             </div>
@@ -52,14 +127,29 @@
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
                         In Progress
                         <span class="ml-auto bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold">
-                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress)
+                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress && !t.IsArchived)
                         </span>
                     </h3>
                 </div>
                 <div class="p-3 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-                    @foreach (var task in Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress))
+                    @{
+                        var inProgressTasks = Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InProgress && !t.IsArchived).ToList();
+                    }
+                    @if (inProgressTasks.Any())
                     {
-                        @await Html.PartialAsync("_TaskCard", task)
+                        foreach (var task in inProgressTasks)
+                        {
+                            @await Html.PartialAsync("_TaskCard", task)
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <p class="text-sm font-semibold">No tasks in progress</p>
+                        </div>
                     }
                 </div>
             </div>
@@ -71,37 +161,141 @@
                         <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
                         In Review
                         <span class="ml-auto bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold">
-                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview)
+                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview && !t.IsArchived)
                         </span>
                     </h3>
                 </div>
                 <div class="p-3 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-                    @foreach (var task in Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview))
-                    {
-                        @await Html.PartialAsync("_TaskCard", task)
+                    @{
+                        var inReviewTasks = Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.InReview && !t.IsArchived).ToList();
                     }
-                </div>
-            </div>
-
-            <!-- Done Column -->
-            <div class="bg-white rounded-xl shadow-lg border-t-4 border-green-500">
-                <div class="p-4 border-b border-slate-200">
-                    <h3 class="font-bold text-green-700 flex items-center">
-                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                        Done
-                        <span class="ml-auto bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
-                            @Model.Count(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.Done)
-                        </span>
-                    </h3>
-                </div>
-                <div class="p-3 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
-                    @foreach (var task in Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.Done))
+                    @if (inReviewTasks.Any())
                     {
-                        @await Html.PartialAsync("_TaskCard", task)
+                        foreach (var task in inReviewTasks)
+                        {
+                            @await Html.PartialAsync("_TaskCard", task)
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-8 text-slate-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-sm font-semibold">No tasks to review</p>
+                            <p class="text-xs mt-1">Great job! All caught up.</p>
+                        </div>
                     }
                 </div>
             </div>
         </div>
+
+        <!-- Task History Logs Section -->
+        @{
+            var completedTasks = Model.Where(t => t.Status == OfficeNexus.Models.TaskWorkflowStatus.Done && !t.IsArchived).ToList();
+        }
+        
+        @if (completedTasks.Any())
+        {
+            <div class="mt-12" x-data="{ historyExpanded: true }" id="taskHistory">
+                <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                    <div class="p-6 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-slate-100">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900">Task History Logs</h2>
+                                <p class="text-sm text-slate-600">@completedTasks.Count completed task(s)</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button @@click="historyExpanded = !historyExpanded" 
+                                    class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-all">
+                                <span x-show="!historyExpanded">▼ Show History</span>
+                                <span x-show="historyExpanded" x-cloak>▲ Hide History</span>
+                            </button>
+                            <form asp-action="ClearHistory" method="post" class="inline"
+                                  onsubmit="return confirm('Clear all completed tasks from history? This will archive them.');">
+                                <button type="submit" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-semibold transition-all">
+                                    🗑️ Clear History
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div x-show="historyExpanded" x-cloak class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-slate-50 border-b-2 border-slate-200">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Task</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Assigned To</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Completed</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Reviewed By</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    @foreach (var task in completedTasks.OrderByDescending(t => t.CompletedAt))
+                                    {
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="px-4 py-4">
+                                                <div class="font-semibold text-slate-900">@task.Title</div>
+                                                <div class="text-sm text-slate-500 truncate max-w-md">@task.Description</div>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                                        @task.AssignedToUser.FullName.Substring(0, 1)
+                                                    </div>
+                                                    <span class="text-sm text-slate-700">@task.AssignedToUser.FullName</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                @{
+                                                    var priorityColors = new Dictionary<OfficeNexus.Models.TaskPriority, string>
+                                                    {
+                                                        { OfficeNexus.Models.TaskPriority.Low, "bg-slate-100 text-slate-700" },
+                                                        { OfficeNexus.Models.TaskPriority.Medium, "bg-blue-100 text-blue-700" },
+                                                        { OfficeNexus.Models.TaskPriority.High, "bg-orange-100 text-orange-700" },
+                                                        { OfficeNexus.Models.TaskPriority.Critical, "bg-red-100 text-red-700" }
+                                                    };
+                                                }
+                                                <span class="px-2 py-1 rounded-full text-xs font-semibold @priorityColors[task.Priority]">
+                                                    @task.Priority
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                <div class="text-sm text-slate-700">@task.CompletedAt?.ToString("MMM dd, yyyy")</div>
+                                                <div class="text-xs text-slate-500">@task.CompletedAt?.ToString("h:mm tt")</div>
+                                            </td>
+                                            <td class="px-4 py-4">
+                                                @if (task.ReviewedByAdminId.HasValue)
+                                                {
+                                                    <span class="text-sm text-green-600 font-semibold">✓ Reviewed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-sm text-slate-400">-</span>
+                                                }
+                                            </td>
+                                            <td class="px-4 py-4 text-center">
+                                                <a href="@Url.Action("Details", "Task", new { id = task.Id })" 
+                                                   class="text-blue-600 hover:text-blue-700 font-semibold text-sm">
+                                                    View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 

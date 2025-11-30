@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeNexus.Data;
 using OfficeNexus.Models;
+using OfficeNexus.Services;
 using System.Security.Claims;
 
 namespace OfficeNexus.Controllers
@@ -11,10 +12,12 @@ namespace OfficeNexus.Controllers
     public class LeaveController : Controller
     {
         private readonly OfficeDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public LeaveController(OfficeDbContext context)
+        public LeaveController(OfficeDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // ==================== EMPLOYEE ACTIONS ====================
@@ -70,6 +73,16 @@ namespace OfficeNexus.Controllers
 
             _context.LeaveRequests.Add(model);
             await _context.SaveChangesAsync();
+
+            // Get employee details for notification
+            var employee = await _context.Users.FindAsync(model.EmployeeId);
+            
+            // Notify all admins about new leave request
+            await _notificationService.NotifyAdmins(
+                $"{employee?.FullName} has applied for {model.Type} leave.",
+                "/Leave/ManageRequests",
+                NotificationType.Info
+            );
 
             TempData["Success"] = "Leave request submitted successfully!";
             return RedirectToAction(nameof(MyLeaves));
@@ -190,6 +203,24 @@ namespace OfficeNexus.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // Notify employee about decision
+            string notificationMessage = decision switch
+            {
+                "Paid" => "Your leave request has been approved (Paid).",
+                "Unpaid" => "Your leave request has been approved (Unpaid).",
+                "Reject" => "Your leave request has been rejected.",
+                _ => "Your leave request has been processed."
+            };
+
+            var notificationType = decision == "Reject" ? NotificationType.Warning : NotificationType.Success;
+
+            await _notificationService.NotifyUser(
+                leaveRequest.EmployeeId,
+                notificationMessage,
+                "/Leave/MyLeaves",
+                notificationType
+            );
 
             return RedirectToAction(nameof(ManageRequests));
         }

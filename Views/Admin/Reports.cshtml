@@ -1,3 +1,4 @@
+@model dynamic
 @{
     ViewData["Title"] = "Reports";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -6,100 +7,472 @@
 <div class="space-y-6">
     
     <!-- Header -->
-    <div>
-        <h2 class="text-2xl font-bold text-slate-900">Reports & Analytics</h2>
-        <p class="mt-1 text-sm text-slate-500">Generate insights and export data</p>
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Reports & Analytics</h2>
+            <p class="mt-1 text-sm text-slate-500">Generate insights and export data</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.print()" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Print Report
+            </button>
+        </div>
     </div>
 
-    <!-- Coming Soon Banner -->
-    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg p-8 text-white text-center">
-        <svg class="mx-auto h-16 w-16 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        <h3 class="mt-4 text-2xl font-bold">Reports Module Coming Soon</h3>
-        <p class="mt-2 text-indigo-100">Advanced analytics and reporting features are under development</p>
-    </div>
-
-    <!-- Planned Features -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                </svg>
+        <!-- Visitors Card -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6 hover:shadow-xl transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Visitors</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TotalVisitors</p>
+                    <p class="text-xs text-slate-400 mt-1">@Model.ActiveVisitors active now</p>
+                </div>
+                <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900">Visitor Trends</h3>
-            <p class="mt-2 text-sm text-slate-500">Analyze visitor patterns over time with detailed charts and graphs</p>
+            <div class="mt-4 flex items-center gap-4 text-xs">
+                <span class="text-green-600 font-medium">Today: @Model.VisitorsToday</span>
+                <span class="text-slate-400">This Week: @Model.VisitorsThisWeek</span>
+            </div>
         </div>
 
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+        <!-- Employees Card -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6 hover:shadow-xl transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Employees</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TotalEmployees</p>
+                    <p class="text-xs text-green-600 mt-1">@Model.ActiveEmployees active</p>
+                </div>
+                <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900">Employee Performance</h3>
-            <p class="mt-2 text-sm text-slate-500">Track employee activity and visitor handling metrics</p>
+            <div class="mt-4 flex items-center gap-4 text-xs">
+                <span class="text-yellow-600 font-medium">Pending: @Model.PendingEmployees</span>
+                <span class="text-red-600">Terminated: @Model.TerminatedEmployees</span>
+            </div>
         </div>
 
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+        <!-- Tasks Card -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6 hover:shadow-xl transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Total Tasks</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TotalTasks</p>
+                    <p class="text-xs text-slate-400 mt-1">All time tasks</p>
+                </div>
+                <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900">Export Reports</h3>
-            <p class="mt-2 text-sm text-slate-500">Download visitor logs and analytics in PDF or Excel format</p>
+            <div class="mt-4 flex items-center gap-4 text-xs">
+                <span class="text-blue-600 font-medium">View Details →</span>
+            </div>
         </div>
 
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+        <!-- Leave Requests Card -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6 hover:shadow-xl transition">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Leave Requests</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">@Model.TotalLeaveRequests</p>
+                    <p class="text-xs text-amber-600 mt-1">@Model.PendingLeaves pending</p>
+                </div>
+                <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900">Peak Hours Analysis</h3>
-            <p class="mt-2 text-sm text-slate-500">Identify busiest times and optimize staffing</p>
-        </div>
-
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+            <div class="mt-4 flex items-center gap-4 text-xs">
+                <span class="text-green-600 font-medium">Approved: @Model.ApprovedLeaves</span>
+                <span class="text-red-600">Rejected: @Model.RejectedLeaves</span>
             </div>
-            <h3 class="text-lg font-semibold text-slate-900">Security Insights</h3>
-            <p class="mt-2 text-sm text-slate-500">Monitor visitor types and security compliance</p>
-        </div>
-
-        <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-            <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
-                <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-slate-900">Custom Date Ranges</h3>
-            <p class="mt-2 text-sm text-slate-500">Generate reports for specific time periods</p>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="bg-white shadow-sm rounded-xl border border-slate-100 p-6">
-        <h3 class="text-lg font-semibold text-slate-900 mb-4">Available Actions</h3>
-        <div class="flex flex-wrap gap-3">
-            <a asp-action="Index" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    <!-- Charts Row 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Visitor Trends Chart -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Visitor Trends (Last 7 Days)</h3>
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="visitorTrendsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Visitor Types Chart -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Visitor Types Distribution</h3>
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="visitorTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Department Distribution -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Employees by Department</h3>
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Task Status Chart -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Task Status Distribution</h3>
+                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="taskStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 3 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Peak Hours Chart -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Peak Visitor Hours</h3>
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="peakHoursChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Leave Types Chart -->
+        <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Leave Types Distribution</h3>
+                <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="h-64">
+                <canvas id="leaveTypesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Employees Section -->
+    <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-slate-900">Top Employees by Visitor Handling</h3>
+            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-                Back to Dashboard
-            </a>
-            <a asp-action="VisitorLogs" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                View Visitor Logs
-            </a>
+            </div>
+        </div>
+        <div class="space-y-4" id="topEmployeesContainer">
+            <p class="text-center text-slate-500 py-8">Loading top employees...</p>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Visitor Trends Chart (Line Chart)
+        const visitorTrendsCtx = document.getElementById('visitorTrendsChart').getContext('2d');
+        const visitorTrendsData = @Html.Raw(Json.Serialize(Model.VisitorTrends));
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            last7Days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        }
+        
+        new Chart(visitorTrendsCtx, {
+            type: 'line',
+            data: {
+                labels: last7Days,
+                datasets: [{
+                    label: 'Visitors',
+                    data: visitorTrendsData,
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Visitor Types Chart (Doughnut Chart)
+        const visitorTypesCtx = document.getElementById('visitorTypesChart').getContext('2d');
+        const visitorTypesData = @Html.Raw(Json.Serialize(Model.VisitorTypes));
+        const visitorTypeLabels = visitorTypesData.map(v => v.type);
+        const visitorTypeCounts = visitorTypesData.map(v => v.count);
+        
+        new Chart(visitorTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: visitorTypeLabels,
+                datasets: [{
+                    data: visitorTypeCounts,
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)',
+                        'rgb(245, 158, 11)',
+                        'rgb(239, 68, 68)',
+                        'rgb(139, 92, 246)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Department Chart (Bar Chart)
+        const departmentCtx = document.getElementById('departmentChart').getContext('2d');
+        const departmentData = @Html.Raw(Json.Serialize(Model.DepartmentStats));
+        const departmentLabels = departmentData.map(d => d.department);
+        const departmentCounts = departmentData.map(d => d.count);
+        
+        new Chart(departmentCtx, {
+            type: 'bar',
+            data: {
+                labels: departmentLabels,
+                datasets: [{
+                    label: 'Employees',
+                    data: departmentCounts,
+                    backgroundColor: 'rgb(16, 185, 129)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Task Status Chart (Pie Chart)
+        const taskStatusCtx = document.getElementById('taskStatusChart').getContext('2d');
+        const taskStatusData = @Html.Raw(Json.Serialize(Model.TasksByStatus));
+        const taskStatusLabels = taskStatusData.map(t => t.status);
+        const taskStatusCounts = taskStatusData.map(t => t.count);
+        
+        new Chart(taskStatusCtx, {
+            type: 'pie',
+            data: {
+                labels: taskStatusLabels,
+                datasets: [{
+                    data: taskStatusCounts,
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(245, 158, 11)',
+                        'rgb(139, 92, 246)',
+                        'rgb(16, 185, 129)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Peak Hours Chart (Bar Chart)
+        const peakHoursCtx = document.getElementById('peakHoursChart').getContext('2d');
+        const peakHoursData = @Html.Raw(Json.Serialize(Model.PeakHours));
+        const hourLabels = [];
+        for (let i = 0; i < 24; i++) {
+            hourLabels.push(i + ':00');
+        }
+        
+        new Chart(peakHoursCtx, {
+            type: 'bar',
+            data: {
+                labels: hourLabels,
+                datasets: [{
+                    label: 'Visitors',
+                    data: peakHoursData,
+                    backgroundColor: 'rgb(245, 158, 11)',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            }
+        });
+
+        // Leave Types Chart (Doughnut Chart)
+        const leaveTypesCtx = document.getElementById('leaveTypesChart').getContext('2d');
+        const leaveTypesData = @Html.Raw(Json.Serialize(Model.LeaveTypes));
+        const leaveTypeLabels = leaveTypesData.map(l => l.type);
+        const leaveTypeCounts = leaveTypesData.map(l => l.count);
+        
+        new Chart(leaveTypesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: leaveTypeLabels,
+                datasets: [{
+                    data: leaveTypeCounts,
+                    backgroundColor: [
+                        'rgb(239, 68, 68)',
+                        'rgb(59, 130, 246)',
+                        'rgb(245, 158, 11)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Top Employees Section
+        const topEmployeesData = @Html.Raw(Json.Serialize(Model.TopEmployeesByVisitors));
+        const topEmployeesContainer = document.getElementById('topEmployeesContainer');
+        
+        if (topEmployeesData && topEmployeesData.length > 0) {
+            topEmployeesContainer.innerHTML = '';
+            topEmployeesData.forEach(emp => {
+                const employeeName = emp.employee ? emp.employee.fullName : 'Unknown';
+                const employeeDept = emp.employee ? emp.employee.department : 'N/A';
+                const initials = employeeName !== 'Unknown' ? employeeName.substring(0, Math.min(2, employeeName.length)).toUpperCase() : 'N/A';
+                
+                const empCard = document.createElement('div');
+                empCard.className = 'flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition';
+                empCard.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            ${initials}
+                        </div>
+                        <div>
+                            <p class="font-medium text-slate-900">${employeeName}</p>
+                            <p class="text-sm text-slate-500">${employeeDept}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-indigo-600">${emp.count}</p>
+                        <p class="text-xs text-slate-500">visitors handled</p>
+                    </div>
+                `;
+                topEmployeesContainer.appendChild(empCard);
+            });
+        } else {
+            topEmployeesContainer.innerHTML = '<p class="text-center text-slate-500 py-8">No visitor data available</p>';
+        }
+    </script>
+}

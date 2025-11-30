@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeNexus.Data;
 using OfficeNexus.Models;
+using OfficeNexus.Services;
 using System.Security.Claims;
 
 namespace OfficeNexus.Controllers
@@ -12,11 +13,13 @@ namespace OfficeNexus.Controllers
     {
         private readonly OfficeDbContext _context;
         private readonly IWebHostEnvironment _environment;
+        private readonly INotificationService _notificationService;
 
-        public TaskController(OfficeDbContext context, IWebHostEnvironment environment)
+        public TaskController(OfficeDbContext context, IWebHostEnvironment environment, INotificationService notificationService)
         {
             _context = context;
             _environment = environment;
+            _notificationService = notificationService;
         }
 
         // ==================== ADMIN ACTIONS ====================
@@ -108,6 +111,14 @@ namespace OfficeNexus.Controllers
 
             _context.TaskItems.Add(task);
             await _context.SaveChangesAsync();
+
+            // Notify assigned employee about new task
+            await _notificationService.NotifyUser(
+                task.AssignedToUserId,
+                $"You have been assigned a new task: {task.Title}.",
+                $"/Task/Details/{task.Id}",
+                NotificationType.Info
+            );
 
             TempData["Success"] = $"Task '{task.Title}' created successfully!";
             return RedirectToAction(nameof(Index));
@@ -243,6 +254,77 @@ namespace OfficeNexus.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// POST: Mark task as done (Admin review complete)
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsDone(int id)
+        {
+            var userIdStr = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var adminId = int.Parse(userIdStr);
+            var task = await _context.TaskItems
+                .Include(t => t.AssignedToUser)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            // Update task status and review info
+            task.Status = TaskWorkflowStatus.Done;
+            task.CompletedAt = DateTime.Now;
+            task.ReviewedAt = DateTime.Now;
+            task.ReviewedByAdminId = adminId;
+
+            await _context.SaveChangesAsync();
+
+            // Get admin name for notification
+            var admin = await _context.Users.FindAsync(adminId);
+            var adminName = admin?.FullName ?? "Admin";
+
+            // Send notification to employee
+            await _notificationService.NotifyUser(
+                task.AssignedToUserId,
+                $"Your task '{task.Title}' has been reviewed and marked as done by {adminName}.",
+                $"/Task/Details/{task.Id}",
+                NotificationType.Success
+            );
+
+            TempData["Success"] = $"Task '{task.Title}' marked as done and employee notified!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// POST: Clear task history (archive all completed tasks)
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ClearHistory()
+        {
+            var completedTasks = await _context.TaskItems
+                .Where(t => t.Status == TaskWorkflowStatus.Done && !t.IsArchived)
+                .ToListAsync();
+
+            foreach (var task in completedTasks)
+            {
+                task.IsArchived = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Cleared {completedTasks.Count} task(s) from history!";
+            return RedirectToAction(nameof(Index));
+        }
+
         // ==================== EMPLOYEE ACTIONS ====================
 
         [Authorize(Roles = "Employee")]
@@ -297,9 +379,125 @@ namespace OfficeNexus.Controllers
             task.Status = status;
             await _context.SaveChangesAsync();
 
+            // Notify admins when task is moved to "In Review"
+            if (status == TaskWorkflowStatus.InReview)
+            {
+                await _notificationService.NotifyAdmins(
+                    $"Task '{task.Title}' is ready for review.",
+                    $"/Task/Details/{task.Id}",
+                    NotificationType.Info
+                );
+            }
+
             TempData["Success"] = $"Task status updated to {status}!";
             return RedirectToAction(nameof(MyTasks));
         }
+
+        /// <summary>
+        /// POST: Submit task for review with optional work submission file
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Employee")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitForReview(int id, List<IFormFile> workSubmissionFiles)
+        {
+            var userIdStr = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var task = await _context.TaskItems.FindAsync(id);
+
+            if (task == null || task.AssignedToUserId != userId)
+            {
+                return NotFound();
+            }
+
+            // Handle multiple file uploads (max 3 files)
+            if (workSubmissionFiles != null && workSubmissionFiles.Count > 0)
+            {
+                // Validate file count (max 3 files)
+                if (workSubmissionFiles.Count > 3)
+                {
+                    TempData["Error"] = "You can upload a maximum of 3 files per submission.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                var submissionsPath = Path.Combine(_environment.WebRootPath, "uploads", "submissions");
+                if (!Directory.Exists(submissionsPath))
+                {
+                    Directory.CreateDirectory(submissionsPath);
+                }
+
+                var allowedExtensions = new[] { ".png", ".jpg", ".jpeg", ".gif", ".pdf", ".docx", ".doc" };
+
+                // Validate all files first before uploading any
+                foreach (var file in workSubmissionFiles)
+                {
+                    if (file.Length > 0)
+                    {
+                        // Validate file size (max 10MB per file)
+                        if (file.Length > 10 * 1024 * 1024)
+                        {
+                            TempData["Error"] = $"File '{file.FileName}' exceeds 10MB limit.";
+                            return RedirectToAction(nameof(Details), new { id });
+                        }
+
+                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            TempData["Error"] = $"File type '{fileExtension}' is not allowed for '{file.FileName}'. Allowed types: PNG, JPG, JPEG, GIF, PDF, DOCX, DOC.";
+                            return RedirectToAction(nameof(Details), new { id });
+                        }
+                    }
+                }
+
+                // All validations passed, now upload files
+                foreach (var file in workSubmissionFiles)
+                {
+                    if (file.Length > 0)
+                    {
+                        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                        var fileName = "SUBMISSION_" + Guid.NewGuid().ToString() + fileExtension;
+                        var filePath = Path.Combine(submissionsPath, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        var submission = new TaskSubmission
+                        {
+                            TaskItemId = task.Id,
+                            UserId = userId,
+                            FileName = file.FileName,
+                            FilePath = "/uploads/submissions/" + fileName,
+                            UploadedAt = DateTime.Now
+                        };
+
+                        _context.TaskSubmissions.Add(submission);
+                    }
+                }
+            }
+
+            task.Status = TaskWorkflowStatus.InReview;
+            task.SubmittedAt = DateTime.Now;
+            
+            await _context.SaveChangesAsync();
+
+            await _notificationService.NotifyAdmins(
+                $"Task '{task.Title}' has been submitted for review.",
+                $"/Task/Details/{task.Id}",
+                NotificationType.Info
+            );
+
+            TempData["Success"] = "Task submitted for review successfully!";
+            return RedirectToAction(nameof(MyTasks));
+        }
+
+
 
         // ==================== SHARED ACTIONS ====================
 
@@ -310,6 +508,7 @@ namespace OfficeNexus.Controllers
                 .Include(t => t.CreatedByAdmin)
                 .Include(t => t.Comments)
                     .ThenInclude(c => c.User)
+                .Include(t => t.Submissions)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null)

@@ -1,3 +1,5 @@
+@model dynamic
+
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
@@ -35,7 +37,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-slate-500 font-medium">To Do</p>
-                            <p class="text-2xl font-bold text-slate-900 mt-1">0</p>
+                            <p class="text-2xl font-bold text-slate-900 mt-1">@ViewBag.TodoCount</p>
                         </div>
                         <div class="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center">
                             <span class="text-lg">📝</span>
@@ -46,7 +48,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-blue-600 font-medium">In Progress</p>
-                            <p class="text-2xl font-bold text-blue-700 mt-1">0</p>
+                            <p class="text-2xl font-bold text-blue-700 mt-1">@ViewBag.InProgressCount</p>
                         </div>
                         <div class="w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center">
                             <span class="text-lg">⚡</span>
@@ -57,7 +59,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-yellow-600 font-medium">In Review</p>
-                            <p class="text-2xl font-bold text-yellow-700 mt-1">0</p>
+                            <p class="text-2xl font-bold text-yellow-700 mt-1">@ViewBag.InReviewCount</p>
                         </div>
                         <div class="w-10 h-10 bg-yellow-200 rounded-lg flex items-center justify-center">
                             <span class="text-lg">👀</span>
@@ -68,7 +70,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs text-green-600 font-medium">Completed</p>
-                            <p class="text-2xl font-bold text-green-700 mt-1">0</p>
+                            <p class="text-2xl font-bold text-green-700 mt-1">@ViewBag.CompletedCount</p>
                         </div>
                         <div class="w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center">
                             <span class="text-lg">✅</span>
@@ -76,13 +78,16 @@
                     </div>
                 </div>
             </div>
-            <div class="text-center py-8">
-                <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <p class="text-slate-600 font-medium mb-1">No tasks assigned yet</p>
-                <p class="text-sm text-slate-500">Tasks assigned to you will appear here</p>
-            </div>
+            @if (ViewBag.TodoCount + ViewBag.InProgressCount + ViewBag.InReviewCount + ViewBag.CompletedCount == 0)
+            {
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <p class="text-slate-600 font-medium mb-1">No tasks assigned yet</p>
+                    <p class="text-sm text-slate-500">Tasks assigned to you will appear here</p>
+                </div>
+            }
         </div>
     </div>
 

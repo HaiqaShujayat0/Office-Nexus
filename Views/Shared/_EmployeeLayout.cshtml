@@ -38,27 +38,39 @@
         
         <!-- Sidebar -->
         <aside 
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
-            :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+            :class="{
+                'w-64': sidebarOpen,
+                'w-20': !sidebarOpen,
+                '-translate-x-full lg:translate-x-0': !mobileMenuOpen
+            }"
             x-cloak>
             
             <!-- Logo -->
             <div class="flex items-center justify-between h-16 px-6 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-600">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg flex-shrink-0">
                         <span class="text-blue-600 text-xl font-bold">O</span>
                     </div>
-                    <span class="font-bold text-lg text-white tracking-tight">OfficeNexus</span>
+                    <span class="font-bold text-lg text-white tracking-tight whitespace-nowrap" x-show="sidebarOpen" x-cloak>OfficeNexus</span>
                 </div>
+                <button 
+                    @@click="sidebarOpen = !sidebarOpen"
+                    class="hidden lg:block p-1.5 rounded-lg hover:bg-white hover:bg-opacity-20 text-white transition-all flex-shrink-0"
+                    title="Toggle Sidebar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
             
             <!-- User Profile -->
             <div class="p-4 border-b border-slate-200 bg-slate-50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md">
+                <div class="flex items-center gap-3 justify-center" :class="{'flex-col': !sidebarOpen}">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md flex-shrink-0">
                         @(User.Identity?.Name?.Substring(0, 2).ToUpper() ?? "EM")
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0" x-show="sidebarOpen" x-cloak>
                         <p class="text-sm font-semibold text-slate-900 truncate">@User.Identity?.Name</p>
                         <p class="text-xs text-slate-500 truncate">Employee</p>
                     </div>
@@ -68,46 +80,56 @@
             <!-- Navigation -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <a asp-controller="Employee" asp-action="Dashboard" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'Dashboard' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span>Dashboard</span>
+                    <span x-show="sidebarOpen" x-cloak>Dashboard</span>
                 </a>
                 
                 <a asp-controller="Task" asp-action="MyTasks" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'My Tasks' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
-                    <span>My Tasks</span>
+                    <span x-show="sidebarOpen" x-cloak>My Tasks</span>
                 </a>
                 
                 <a asp-controller="Leave" asp-action="MyLeaves" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leave" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leave" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'My Leaves' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>My Leaves</span>
+                    <span x-show="sidebarOpen" x-cloak>My Leaves</span>
                 </a>
                 
                 <a asp-controller="Employee" asp-action="Profile" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'My Profile' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span>My Profile</span>
+                    <span x-show="sidebarOpen" x-cloak>My Profile</span>
                 </a>
             </nav>
             
             <!-- Logout -->
             <div class="p-3 border-t border-slate-200">
                 <a asp-controller="Auth" asp-action="Logout" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'Sign Out' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    <span>Sign Out</span>
+                    <span x-show="sidebarOpen" x-cloak>Sign Out</span>
                 </a>
             </div>
         </aside>
@@ -150,6 +172,10 @@
                             </svg>
                             <span class="font-medium">Online</span>
                         </div>
+                        
+                        <!-- Notification Bell Icon -->
+                        @await Component.InvokeAsync("Notification")
+                        
                         <div class="text-sm text-slate-500">
                             @DateTime.Now.ToString("MMM dd, yyyy")
                         </div>

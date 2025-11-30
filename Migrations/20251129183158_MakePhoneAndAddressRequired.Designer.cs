@@ -11,8 +11,8 @@ using OfficeNexus.Data;
 namespace OfficeNexus.Migrations
 {
     [DbContext(typeof(OfficeDbContext))]
-    [Migration("20251128174916_AddLeaveManagement")]
-    partial class AddLeaveManagement
+    [Migration("20251129183158_MakePhoneAndAddressRequired")]
+    partial class MakePhoneAndAddressRequired
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,12 +44,22 @@ namespace OfficeNexus.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("HomeAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("JobTitle")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Role")
@@ -143,6 +153,40 @@ namespace OfficeNexus.Migrations
                     b.ToTable("LeaveRequests");
                 });
 
+            modelBuilder.Entity("OfficeNexus.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RecipientUserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientUserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("OfficeNexus.Models.TaskComment", b =>
                 {
                     b.Property<int>("Id")
@@ -204,11 +248,23 @@ namespace OfficeNexus.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ReviewedByAdminId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -222,6 +278,38 @@ namespace OfficeNexus.Migrations
                     b.HasIndex("CreatedByAdminId");
 
                     b.ToTable("TaskItems");
+                });
+
+            modelBuilder.Entity("OfficeNexus.Models.TaskSubmission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TaskItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TaskSubmissions");
                 });
 
             modelBuilder.Entity("OfficeNexus.Data.VisitorLog", b =>
@@ -244,6 +332,17 @@ namespace OfficeNexus.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("OfficeNexus.Models.Notification", b =>
+                {
+                    b.HasOne("OfficeNexus.Data.User", "RecipientUser")
+                        .WithMany()
+                        .HasForeignKey("RecipientUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecipientUser");
                 });
 
             modelBuilder.Entity("OfficeNexus.Models.TaskComment", b =>
@@ -284,9 +383,30 @@ namespace OfficeNexus.Migrations
                     b.Navigation("CreatedByAdmin");
                 });
 
+            modelBuilder.Entity("OfficeNexus.Models.TaskSubmission", b =>
+                {
+                    b.HasOne("OfficeNexus.Models.TaskItem", "TaskItem")
+                        .WithMany("Submissions")
+                        .HasForeignKey("TaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OfficeNexus.Data.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TaskItem");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("OfficeNexus.Models.TaskItem", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

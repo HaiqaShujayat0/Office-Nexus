@@ -1,0 +1,9 @@
+        
+        // --- Contact Information ---
+        
+        [Phone]
+        [StringLength(20, MinimumLength = 10, ErrorMessage = ""Phone number must be between 10 and 20 characters"")]
+        public string? PhoneNumber { get; set; }
+        
+        [StringLength(500, ErrorMessage = ""Address cannot exceed 500 characters"")]
+        public string? HomeAddress { get; set; }

@@ -13,14 +13,16 @@
             <h2 class="text-2xl font-bold text-slate-900">Employee Management</h2>
             <p class="mt-1 text-sm text-slate-500">Manage your team members and their access</p>
         </div>
-        <button 
-            @@click="showAddForm = !showAddForm"
-            class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span x-text="showAddForm ? 'Close Form' : 'Add Employee'"></span>
-        </button>
+        <div class="flex gap-3">
+            <button 
+                @@click="showAddForm = !showAddForm"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span x-text="showAddForm ? 'Close Form' : 'Add Employee'"></span>
+            </button>
+        </div>
     </div>
 
     <!-- Add Employee Form -->
@@ -118,13 +120,47 @@
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Default Password *</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Phone Number *</label>
                 <input 
-                    type="password" 
-                    name="password" 
-                    required 
-                    placeholder="Minimum 8 characters"
+                    type="tel" 
+                    name="phoneNumber" 
+                    required
+                    placeholder="+1 (555) 123-4567"
+                    pattern="[0-9+\-\(\)\s]+"
+                    title="Please enter a valid phone number"
                     class="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                <p class="mt-1 text-xs text-slate-500">Include country code if international</p>
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Home Address *</label>
+                <textarea 
+                    name="homeAddress" 
+                    required
+                    rows="2"
+                    maxlength="500"
+                    placeholder="123 Main Street, Apartment 4B, City, State, ZIP"
+                    class="w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none"></textarea>
+                <p class="mt-1 text-xs text-slate-500">Full residential address</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Default Password *</label>
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="employeePassword"
+                        name="password" 
+                        required 
+                        placeholder="Minimum 8 characters"
+                        class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    <button type="button" onclick="togglePassword('employeePassword')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+                        <svg id="employeePassword-eye" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
                 <p class="mt-1 text-xs text-slate-500">Employee will be able to change this after first login</p>
             </div>
             
@@ -139,6 +175,68 @@
                     type="submit" 
                     class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all">
                     Create Employee Account
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bulk Import Section -->
+    <div class="bg-white shadow-lg rounded-xl border border-slate-100 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Bulk Import Employees</h3>
+        
+        @if (TempData["ImportErrors"] != null)
+        {
+            <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-sm font-medium text-yellow-800 mb-2">Import Warnings:</p>
+                <div class="text-xs text-yellow-700">@Html.Raw(TempData["ImportErrors"])</div>
+            </div>
+        }
+        
+        <form asp-action="ImportEmployees" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-6">
+                <div class="flex items-center gap-4">
+                    <div class="flex-shrink-0">
+                        <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <label for="excelFile" class="block text-sm font-medium text-slate-700 mb-2">Upload Excel File (.xlsx)</label>
+                        <input 
+                            type="file" 
+                            id="excelFile"
+                            name="file" 
+                            accept=".xlsx"
+                            required
+                            class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition">
+                        <p class="mt-2 text-xs text-slate-500">Required columns: FullName, Email, JobTitle, Department, BasicSalary, PhoneNumber, HomeAddress. Optional: Password</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                <div class="text-sm text-blue-800">
+                    <p class="font-medium mb-1">How it works:</p>
+                    <ul class="list-disc list-inside space-y-1 text-xs">
+                        <li>Employees with <strong>all required fields</strong> will be imported with <span class="font-semibold text-green-700">Active</span> status</li>
+                        <li>Employees with <strong>missing fields</strong> will be imported with <span class="font-semibold text-yellow-700">Pending</span> status</li>
+                        <li>You can edit pending employees later to complete their information</li>
+                        <li>Default password "ChangeMe123!" will be used if Password column is missing or empty</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button 
+                    type="submit" 
+                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-600 to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Import Employees
                 </button>
             </div>
         </form>
@@ -212,12 +310,27 @@
                                 <div class="text-sm font-medium text-slate-900">$@emp.BasicSalary.ToString("N0")</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Active
-                                </span>
+                                @if (emp.Status == OfficeNexus.Data.EmployeeStatus.Active)
+                                {
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Active
+                                    </span>
+                                }
+                                else if (emp.Status == OfficeNexus.Data.EmployeeStatus.Pending)
+                                {
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                }
+                                else if (emp.Status == OfficeNexus.Data.EmployeeStatus.Terminated)
+                                {
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Terminated
+                                    </span>
+                                }
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                <a asp-action="EditEmployee" asp-route-id="@emp.Id" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                 <button class="text-slate-600 hover:text-slate-900">Details</button>
                             </td>
                         </tr>
@@ -248,3 +361,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const eyeIcon = document.getElementById(inputId + '-eye');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            // Eye open icon (show password)
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+        } else {
+            input.type = 'password';
+            // Eye closed icon (hide password)
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+        }
+    }
+</script>

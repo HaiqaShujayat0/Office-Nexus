@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using OfficeNexus.Data;
+using OfficeNexus.Services;
 using System.Security.Claims;
 
 namespace OfficeNexus.Controllers
@@ -9,10 +10,12 @@ namespace OfficeNexus.Controllers
     public class AuthController : Controller
     {
         private readonly OfficeDbContext _context;
+        private readonly IRateLimitService _rateLimitService;
 
-        public AuthController(OfficeDbContext context)
+        public AuthController(OfficeDbContext context, IRateLimitService rateLimitService)
         {
             _context = context;
+            _rateLimitService = rateLimitService;
         }
 
         [HttpGet]
@@ -28,15 +31,31 @@ namespace OfficeNexus.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password, string? securityCode)
         {
+            // ✅ SECURITY UPGRADE 1: Rate Limiting (Brute Force Protection)
+            if (await _rateLimitService.IsAccountLockedAsync(email))
+            {
+                var failedCount = await _rateLimitService.GetFailedAttemptsCountAsync(email);
+                var timeRemaining = await _rateLimitService.GetLockoutTimeRemainingAsync(email);
+                
+                ViewBag.Error = $"Account temporarily locked due to {failedCount} failed login attempts. " +
+                               $"Please try again in {timeRemaining?.Minutes ?? 15} minutes.";
+                return View();
+            }
+
             var user = _context.Users.FirstOrDefault(u => u.Email == email);
 
+            // Validate credentials
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
+                // Record failed attempt with IP address
+                var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                await _rateLimitService.RecordLoginAttemptAsync(email, false, ipAddress, "InvalidPassword");
+                
                 ViewBag.Error = "Invalid credentials.";
                 return View();
             }
 
-            // Enhanced Security: Admin users must provide SecurityCode
+            // ✅ SECURITY UPGRADE 2: Enhanced Admin Security (Hashed Security Code)
             if (user.Role == UserRole.Admin)
             {
                 if (string.IsNullOrEmpty(securityCode))
@@ -47,8 +66,14 @@ namespace OfficeNexus.Controllers
                     return View();
                 }
 
-                if (user.SecurityCode != securityCode)
+                // Verify hashed security code using BCrypt
+                if (string.IsNullOrEmpty(user.SecurityCodeHash) || 
+                    !BCrypt.Net.BCrypt.Verify(securityCode, user.SecurityCodeHash))
                 {
+                    // Record failed attempt
+                    var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                    await _rateLimitService.RecordLoginAttemptAsync(email, false, ipAddress, "InvalidSecurityCode");
+                    
                     ViewBag.Error = "Invalid Security Code.";
                     ViewBag.ShowSecurityCode = true;
                     ViewBag.Email = email;
@@ -56,13 +81,18 @@ namespace OfficeNexus.Controllers
                 }
             }
 
-            // Create User Session
+            // ✅ Record successful login
+            var successIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _rateLimitService.RecordLoginAttemptAsync(email, true, successIp);
+
+            // Create User Session with SecurityStamp for session invalidation
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
-                new Claim("UserId", user.Id.ToString())
+                new Claim("UserId", user.Id.ToString()),
+                new Claim("SecurityStamp", user.SecurityStamp) // For global session invalidation
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
