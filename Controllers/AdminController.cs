@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeNexus.Data;
 using OfficeNexus.Models;
+using OfficeNexus.ViewModels;
 
 namespace OfficeNexus.Controllers
 {
@@ -202,6 +203,36 @@ namespace OfficeNexus.Controllers
             return View(viewModel);
         }
 
+        public async Task<IActionResult> BankStatus()
+        {
+            // Bank Info Compliance Report
+            // Left Join: Get all employees and check if they have bank account records
+            var bankComplianceReport = await (from u in _context.Users
+                                              where u.Role == UserRole.Employee
+                                              join b in _context.UserBankAccounts on u.Id equals b.UserId into bankGroup
+                                              from bg in bankGroup.DefaultIfEmpty()
+                                              select new BankStatusViewModel
+                                              {
+                                                  EmployeeId = u.Id,
+                                                  EmployeeName = u.FullName,
+                                                  Department = u.Department,
+                                                  HasSubmittedBankInfo = bg != null,
+                                                  SubmissionDate = bg != null ? bg.CreatedAt : (DateTime?)null
+                                              })
+                                              .OrderBy(e => e.EmployeeName)
+                                              .ToListAsync();
+
+            var bankComplianceStats = new BankAnalyticsDashboardViewModel
+            {
+                TotalEmployees = bankComplianceReport.Count,
+                SubmittedCount = bankComplianceReport.Count(e => e.HasSubmittedBankInfo),
+                PendingCount = bankComplianceReport.Count(e => !e.HasSubmittedBankInfo),
+                EmployeeStatuses = bankComplianceReport
+            };
+
+            return View(bankComplianceStats);
+        }
+
         public IActionResult Settings()
         {
             return View();
@@ -221,6 +252,25 @@ namespace OfficeNexus.Controllers
             if (_context.Users.Any(u => u.Email == email))
             {
                 TempData["Error"] = "Email already exists!";
+                return RedirectToAction("EmployeeManagement");
+            }
+
+            // Password validation
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                TempData["Error"] = "Password is required";
+                return RedirectToAction("EmployeeManagement");
+            }
+
+            if (password.Length < 8)
+            {
+                TempData["Error"] = "Password must be at least 8 characters long";
+                return RedirectToAction("EmployeeManagement");
+            }
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"\d"))
+            {
+                TempData["Error"] = "Password must contain at least one digit";
                 return RedirectToAction("EmployeeManagement");
             }
 
@@ -514,6 +564,50 @@ namespace OfficeNexus.Controllers
             }
 
             return RedirectToAction("VisitorManagement");
+        }
+
+        public async Task<IActionResult> ExportVisitorLogs()
+        {
+            var logs = await _context.VisitorLogs
+                .Include(v => v.Employee)
+                .OrderByDescending(v => v.TimeIn)
+                .ToListAsync();
+
+            // Create CSV content
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Visitor Name,Visitor Type,Purpose,Handled By Employee,Time In,Time Out,Status");
+
+            foreach (var log in logs)
+            {
+                var visitorName = EscapeCsvField(log.VisitorName ?? "");
+                var visitorType = EscapeCsvField(log.VisitorType ?? "");
+                var purpose = EscapeCsvField(log.Purpose ?? "");
+                var employeeName = EscapeCsvField(log.Employee?.FullName ?? "N/A");
+                var timeIn = log.TimeIn.ToString("yyyy-MM-dd HH:mm:ss");
+                var timeOut = log.TimeOut?.ToString("yyyy-MM-dd HH:mm:ss") ?? "";
+                var status = log.TimeOut == null ? "On Premise" : "Checked Out";
+
+                csv.AppendLine($"{visitorName},{visitorType},{purpose},{employeeName},{timeIn},{timeOut},{status}");
+            }
+
+            var fileName = $"VisitorLogs_Export_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+
+            return File(bytes, "text/csv", fileName);
+        }
+
+        private string EscapeCsvField(string field)
+        {
+            if (string.IsNullOrEmpty(field))
+                return "";
+
+            // If field contains comma, quote, or newline, wrap in quotes and escape quotes
+            if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
+            {
+                return "\"" + field.Replace("\"", "\"\"") + "\"";
+            }
+
+            return field;
         }
     }
 }

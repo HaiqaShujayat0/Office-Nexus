@@ -7,6 +7,7 @@ using OfficeNexus.Data;
 using OfficeNexus.Models;
 using OfficeNexus.Services;
 using OfficeNexus.ViewModels;
+using OfficeNexus.Helpers;
 using System.Security.Claims;
 
 namespace OfficeNexus.Controllers
@@ -150,9 +151,23 @@ namespace OfficeNexus.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
+            // Additional server-side validation for password requirements
+            if (!string.IsNullOrEmpty(model.NewPassword))
+            {
+                if (model.NewPassword.Length < 8)
+                {
+                    ModelState.AddModelError("NewPassword", "Password must be at least 8 characters long");
+                }
+                else if (!System.Text.RegularExpressions.Regex.IsMatch(model.NewPassword, @"\d"))
+                {
+                    ModelState.AddModelError("NewPassword", "Password must contain at least one digit");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["Error"] = string.Join(", ", errors);
                 return RedirectToAction(nameof(Profile));
             }
 
@@ -273,6 +288,7 @@ namespace OfficeNexus.Controllers
             return RedirectToAction(nameof(Profile));
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmailChange(string token)
         {
             if (string.IsNullOrEmpty(token))
@@ -295,17 +311,62 @@ namespace OfficeNexus.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
+            // Check if new email is already taken by another user
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == user.NewEmailCandidate && u.Id != user.Id);
+            if (emailExists)
+            {
+                // Clear the pending change
+                user.NewEmailCandidate = null;
+                user.EmailVerificationToken = null;
+                await _context.SaveChangesAsync();
+                
+                TempData["Error"] = "This email is already in use by another account. Email change cancelled.";
+                return RedirectToAction("Login", "Auth");
+            }
+
             var oldEmail = user.Email;
+            
+            // Clear recent failed login attempts for the old email
+            // Since user has verified the new email, we give them a fresh start
+            // This prevents old failed attempts from locking the new email
+            var lockoutThreshold = DateTime.Now.AddMinutes(-15); // Last 15 minutes
+            var recentFailedAttempts = await _context.LoginAttempts
+                .Where(a => a.Email.ToLower() == oldEmail.ToLower() && 
+                           !a.WasSuccessful && 
+                           a.AttemptTime > lockoutThreshold)
+                .ToListAsync();
+            
+            if (recentFailedAttempts.Any())
+            {
+                _context.LoginAttempts.RemoveRange(recentFailedAttempts);
+            }
+            
+            // Also clear any failed attempts that might have been made with the new email
+            // (in case user tried logging in before confirming email change)
+            var newEmailFailedAttempts = await _context.LoginAttempts
+                .Where(a => a.Email.ToLower() == user.NewEmailCandidate.ToLower() && 
+                           !a.WasSuccessful && 
+                           a.AttemptTime > lockoutThreshold)
+                .ToListAsync();
+            
+            if (newEmailFailedAttempts.Any())
+            {
+                _context.LoginAttempts.RemoveRange(newEmailFailedAttempts);
+            }
+            
+            // Update user email
             user.Email = user.NewEmailCandidate;
             user.NewEmailCandidate = null;
             user.EmailVerificationToken = null;
-            user.SecurityStamp = Guid.NewGuid().ToString();
+            user.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate all existing sessions
 
             await _context.SaveChangesAsync();
 
+            // Check if user is currently logged in
             var currentUserIdStr = User.FindFirstValue("UserId");
             if (!string.IsNullOrEmpty(currentUserIdStr) && int.Parse(currentUserIdStr) == user.Id)
             {
+                // User is logged in - update their session
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.FullName),
@@ -318,6 +379,7 @@ namespace OfficeNexus.Controllers
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
 
+                await HttpContext.SignOutAsync(); // Sign out first to clear old session
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                 TempData["Success"] = $"✅ Email address updated successfully! Your new email is {user.Email}";
@@ -325,7 +387,8 @@ namespace OfficeNexus.Controllers
             }
             else
             {
-                TempData["Success"] = "Email address updated successfully! Please login with your new email address.";
+                // User is not logged in - redirect to login with success message
+                TempData["Success"] = $"Email address updated successfully! Please login with your new email address: {user.Email}";
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -363,6 +426,169 @@ namespace OfficeNexus.Controllers
 
             TempData["Success"] = "Personal information updated successfully!";
             return RedirectToAction(nameof(Profile));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BankDetails()
+        {
+            var userIdStr = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var bankAccount = await _context.UserBankAccounts
+                .FirstOrDefaultAsync(uba => uba.UserId == userId);
+
+            var model = new BankDetailsViewModel();
+            
+            if (bankAccount != null)
+            {
+                model.Id = bankAccount.Id;
+                model.BankName = bankAccount.BankName; // Not encrypted - not sensitive
+                
+                // Decrypt sensitive fields before displaying to user
+                try
+                {
+                    model.AccountTitle = SecurityHelper.Decrypt(bankAccount.AccountTitle);
+                    model.IBAN = SecurityHelper.Decrypt(bankAccount.IBAN);
+                    model.CNIC = SecurityHelper.Decrypt(bankAccount.CNIC);
+                    
+                    // AccountNumber is optional, decrypt only if not null
+                    if (!string.IsNullOrEmpty(bankAccount.AccountNumber))
+                    {
+                        model.AccountNumber = SecurityHelper.Decrypt(bankAccount.AccountNumber);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // If decryption fails, it might be old unencrypted data or corrupted data
+                    // Log the error and show a message to the user
+                    TempData["Error"] = "Unable to retrieve bank details. Please contact support.";
+                    // Optionally, you could try to show the raw data if it's not encrypted
+                    // For now, we'll show empty fields
+                    model.AccountTitle = string.Empty;
+                    model.IBAN = string.Empty;
+                    model.CNIC = string.Empty;
+                    model.AccountNumber = null;
+                }
+                
+                model.BranchCode = bankAccount.BranchCode; // Not encrypted - not sensitive
+            }
+            else
+            {
+                // Pre-fill Account Title with user's full name
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    model.AccountTitle = user.FullName.ToUpper();
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BankDetails(BankDetailsViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var userIdStr = User.FindFirstValue("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+
+            var userId = int.Parse(userIdStr);
+
+            // Clean and format IBAN: Remove spaces, convert to uppercase
+            var cleanedIban = model.IBAN?.Replace(" ", "").Replace("-", "").ToUpper() ?? "";
+            
+            // Validate IBAN format after cleaning
+            if (string.IsNullOrWhiteSpace(cleanedIban))
+            {
+                ModelState.AddModelError("IBAN", "IBAN is required");
+                return View(model);
+            }
+            
+            if (cleanedIban.Length != 24)
+            {
+                ModelState.AddModelError("IBAN", "IBAN must be exactly 24 characters");
+                return View(model);
+            }
+            
+            if (!cleanedIban.StartsWith("PK"))
+            {
+                ModelState.AddModelError("IBAN", "IBAN must start with 'PK'");
+                return View(model);
+            }
+            
+            if (!System.Text.RegularExpressions.Regex.IsMatch(cleanedIban, @"^PK[0-9A-Z]{22}$"))
+            {
+                ModelState.AddModelError("IBAN", "IBAN must start with 'PK' and contain only uppercase letters and numbers");
+                return View(model);
+            }
+
+            // Validate that Account Title matches user's CNIC name (if we have CNIC)
+            // Note: In real scenario, you might want to verify CNIC matches user's actual CNIC
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                TempData["Error"] = "User not found";
+                return RedirectToAction("Login", "Auth");
+            }
+
+            // Check if bank account already exists
+            var existingBankAccount = await _context.UserBankAccounts
+                .FirstOrDefaultAsync(uba => uba.UserId == userId);
+
+            // Encrypt sensitive fields before saving to database
+            // Note: Validation is done on plain text, encryption happens just before persistence
+            string encryptedAccountTitle = SecurityHelper.Encrypt(model.AccountTitle.Trim().ToUpper());
+            string encryptedIban = SecurityHelper.Encrypt(cleanedIban);
+            string encryptedCnic = SecurityHelper.Encrypt(model.CNIC.Trim());
+            string? encryptedAccountNumber = string.IsNullOrWhiteSpace(model.AccountNumber) 
+                ? null 
+                : SecurityHelper.Encrypt(model.AccountNumber.Trim());
+
+            if (existingBankAccount != null)
+            {
+                // Update existing
+                existingBankAccount.BankName = model.BankName.Trim(); // Not encrypted
+                existingBankAccount.AccountTitle = encryptedAccountTitle; // Encrypted
+                existingBankAccount.IBAN = encryptedIban; // Encrypted
+                existingBankAccount.AccountNumber = encryptedAccountNumber; // Encrypted (if provided)
+                existingBankAccount.BranchCode = string.IsNullOrWhiteSpace(model.BranchCode) ? null : model.BranchCode.Trim(); // Not encrypted
+                existingBankAccount.CNIC = encryptedCnic; // Encrypted
+                existingBankAccount.UpdatedAt = DateTime.Now;
+            }
+            else
+            {
+                // Create new
+                var bankAccount = new UserBankAccount
+                {
+                    UserId = userId,
+                    BankName = model.BankName.Trim(), // Not encrypted
+                    AccountTitle = encryptedAccountTitle, // Encrypted
+                    IBAN = encryptedIban, // Encrypted
+                    AccountNumber = encryptedAccountNumber, // Encrypted (if provided)
+                    BranchCode = string.IsNullOrWhiteSpace(model.BranchCode) ? null : model.BranchCode.Trim(), // Not encrypted
+                    CNIC = encryptedCnic, // Encrypted
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.UserBankAccounts.Add(bankAccount);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Bank details saved successfully!";
+            return RedirectToAction(nameof(BankDetails));
         }
     }
 }

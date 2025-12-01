@@ -1,0 +1,329 @@
+@model OfficeNexus.ViewModels.BankDetailsViewModel
+@{
+    ViewData["Title"] = "Bank Details";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+}
+
+<div class="space-y-6">
+    
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 dark:border-green-400 p-4 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 dark:text-green-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-green-700 dark:text-green-300 font-medium">@TempData["Success"]</p>
+            </div>
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-400 p-4 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-500 dark:text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-red-700 dark:text-red-300 font-medium">@TempData["Error"]</p>
+            </div>
+        </div>
+    }
+
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-slate-800 shadow-lg rounded-2xl border border-slate-100 dark:border-slate-700 p-6">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Bank Details</h1>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Manage your bank account information for payroll processing</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Details Form -->
+    <div class="bg-white dark:bg-slate-800 shadow-lg rounded-2xl border border-slate-100 dark:border-slate-700 p-6">
+        <form asp-action="BankDetails" method="post" id="bankDetailsForm">
+            @Html.AntiForgeryToken()
+            
+            <div class="space-y-6">
+                
+                <!-- Bank Name -->
+                <div>
+                    <label asp-for="BankName" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Bank Name <span class="text-red-500">*</span>
+                    </label>
+                    <input asp-for="BankName" 
+                           list="banks" 
+                           class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition @(ViewData.ModelState["BankName"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                           placeholder="e.g., Meezan Bank"
+                           autocomplete="off" />
+                    <datalist id="banks">
+                        <option value="Meezan Bank">Meezan Bank</option>
+                        <option value="Habib Bank Limited (HBL)">Habib Bank Limited (HBL)</option>
+                        <option value="United Bank Limited (UBL)">United Bank Limited (UBL)</option>
+                        <option value="Allied Bank Limited (ABL)">Allied Bank Limited (ABL)</option>
+                        <option value="MCB Bank">MCB Bank</option>
+                        <option value="Bank Alfalah">Bank Alfalah</option>
+                        <option value="Askari Bank">Askari Bank</option>
+                        <option value="Bank of Punjab">Bank of Punjab</option>
+                        <option value="Faysal Bank">Faysal Bank</option>
+                        <option value="Standard Chartered Bank">Standard Chartered Bank</option>
+                        <option value="JS Bank">JS Bank</option>
+                        <option value="Soneri Bank">Soneri Bank</option>
+                        <option value="Bank Islami">Bank Islami</option>
+                        <option value="Dubai Islamic Bank">Dubai Islamic Bank</option>
+                        <option value="Al Baraka Bank">Al Baraka Bank</option>
+                    </datalist>
+                    <span asp-validation-for="BankName" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                </div>
+
+                <!-- Account Title -->
+                <div>
+                    <label asp-for="AccountTitle" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Account Title <span class="text-red-500">*</span>
+                    </label>
+                    <input asp-for="AccountTitle" 
+                           class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition @(ViewData.ModelState["AccountTitle"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                           placeholder="e.g., MUHAMMAD AHMED"
+                           style="text-transform: uppercase;" />
+                    <span asp-validation-for="AccountTitle" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Must match the name on your CNIC</p>
+                </div>
+
+                <!-- IBAN -->
+                <div>
+                    <label asp-for="IBAN" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        IBAN <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input asp-for="IBAN" 
+                               id="ibanInput"
+                               class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition uppercase @(ViewData.ModelState["IBAN"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                               placeholder="PK36 MEZN 0000 0000 0000 0000"
+                               autocomplete="off" />
+                        <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                            <span id="ibanCounter" class="text-xs text-slate-500 dark:text-slate-400">0/24</span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="IBAN" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Must start with 'PK' and be exactly 24 characters</p>
+                </div>
+
+                <!-- Account Number -->
+                <div>
+                    <label asp-for="AccountNumber" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Account Number <span class="text-slate-400 text-xs">(Optional - Legacy Support)</span>
+                    </label>
+                    <input asp-for="AccountNumber" 
+                           id="accountNumberInput"
+                           type="text"
+                           class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition @(ViewData.ModelState["AccountNumber"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                           placeholder="e.g., 01001234567890"
+                           maxlength="20"
+                           autocomplete="off" />
+                    <span asp-validation-for="AccountNumber" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">14-20 digits (optional if IBAN is provided)</p>
+                </div>
+
+                <!-- Branch Code -->
+                <div>
+                    <label asp-for="BranchCode" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Branch Code <span class="text-slate-400 text-xs">(Optional)</span>
+                    </label>
+                    <input asp-for="BranchCode" 
+                           id="branchCodeInput"
+                           type="text"
+                           class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition @(ViewData.ModelState["BranchCode"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                           placeholder="e.g., 0602"
+                           maxlength="4"
+                           autocomplete="off" />
+                    <span asp-validation-for="BranchCode" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Exactly 4 digits</p>
+                </div>
+
+                <!-- CNIC -->
+                <div>
+                    <label asp-for="CNIC" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        CNIC <span class="text-red-500">*</span>
+                    </label>
+                    <input asp-for="CNIC" 
+                           id="cnicInput"
+                           type="text"
+                           class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition @(ViewData.ModelState["CNIC"]?.Errors.Count > 0 ? "border-red-500 dark:border-red-400" : "")"
+                           placeholder="35202-1234567-1"
+                           maxlength="15"
+                           autocomplete="off" />
+                    <span asp-validation-for="CNIC" class="text-red-500 dark:text-red-400 text-sm mt-1 block"></span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Format: XXXXX-XXXXXXX-X</p>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" 
+                            class="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition shadow-lg hover:shadow-xl">
+                        <div class="flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Save Bank Details</span>
+                        </div>
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    
+    <script>
+        // IBAN Input Handling - Uppercase and Character Counter
+        const ibanInput = document.getElementById('ibanInput');
+        const ibanCounter = document.getElementById('ibanCounter');
+        
+        if (ibanInput) {
+            // Remove spaces and convert to uppercase on input
+            ibanInput.addEventListener('input', function(e) {
+                // Get current value and remove all spaces first
+                let value = e.target.value.replace(/\s/g, '').toUpperCase();
+                
+                // Only allow alphanumeric characters
+                value = value.replace(/[^0-9A-Z]/g, '');
+                
+                // Limit to 24 characters (without spaces)
+                if (value.length > 24) {
+                    value = value.substring(0, 24);
+                }
+                
+                // Format with spaces to match placeholder: PK36 MEZN 0000 0000 0000 0000
+                // Format: First 4 chars, then groups of 4 with spaces
+                let formatted = '';
+                if (value.length === 0) {
+                    formatted = '';
+                } else {
+                    // Format in groups of 4 characters with spaces between groups
+                    for (let i = 0; i < value.length; i += 4) {
+                        if (i > 0) {
+                            formatted += ' '; // Add space before each group (except first)
+                        }
+                        formatted += value.substring(i, i + 4);
+                    }
+                }
+                
+                e.target.value = formatted;
+                
+                // Update counter (count without spaces - actual character count)
+                const charCount = value.length;
+                ibanCounter.textContent = charCount + '/24';
+                
+                // Change color based on count
+                if (charCount === 24) {
+                    ibanCounter.classList.remove('text-slate-500', 'text-yellow-500', 'dark:text-slate-400');
+                    ibanCounter.classList.add('text-green-500', 'dark:text-green-400');
+                } else if (charCount >= 20) {
+                    ibanCounter.classList.remove('text-slate-500', 'text-green-500', 'dark:text-slate-400');
+                    ibanCounter.classList.add('text-yellow-500', 'dark:text-yellow-400');
+                } else {
+                    ibanCounter.classList.remove('text-yellow-500', 'text-green-500', 'dark:text-yellow-400', 'dark:text-green-400');
+                    ibanCounter.classList.add('text-slate-500', 'dark:text-slate-400');
+                }
+            });
+            
+            // Before form submission, remove spaces
+            const form = document.getElementById('bankDetailsForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const value = ibanInput.value.replace(/\s/g, '');
+                    ibanInput.value = value;
+                });
+            }
+            
+            // Initialize counter
+            if (ibanInput.value) {
+                const charCount = ibanInput.value.replace(/\s/g, '').length;
+                ibanCounter.textContent = charCount + '/24';
+            }
+        }
+
+        // Account Number - Numeric only
+        const accountNumberInput = document.getElementById('accountNumberInput');
+        if (accountNumberInput) {
+            accountNumberInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+
+        // Branch Code - Numeric only, exactly 4 digits
+        const branchCodeInput = document.getElementById('branchCodeInput');
+        if (branchCodeInput) {
+            branchCodeInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+            });
+        }
+
+        // CNIC Auto-formatting (XXXXX-XXXXXXX-X)
+        const cnicInput = document.getElementById('cnicInput');
+        if (cnicInput) {
+            cnicInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                
+                // Limit to 13 digits
+                if (value.length > 13) {
+                    value = value.substring(0, 13);
+                }
+                
+                // Format: XXXXX-XXXXXXX-X
+                let formatted = '';
+                if (value.length > 0) {
+                    formatted = value.substring(0, 5);
+                    if (value.length > 5) {
+                        formatted += '-' + value.substring(5, 12);
+                        if (value.length > 12) {
+                            formatted += '-' + value.substring(12, 13);
+                        }
+                    }
+                }
+                
+                e.target.value = formatted;
+            });
+        }
+
+        // Account Title - Auto uppercase
+        const accountTitleInput = document.querySelector('input[name="AccountTitle"]');
+        if (accountTitleInput) {
+            accountTitleInput.addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+            });
+        }
+
+        // Form validation styling
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('bankDetailsForm');
+            if (form) {
+                // Add error styling to fields with validation errors
+                const inputs = form.querySelectorAll('input');
+                inputs.forEach(input => {
+                    const fieldName = input.name;
+                    const modelState = @Html.Raw(Json.Serialize(ViewData.ModelState));
+                    
+                    if (modelState[fieldName] && modelState[fieldName].errors && modelState[fieldName].errors.length > 0) {
+                        input.classList.add('border-red-500', 'dark:border-red-400');
+                        input.classList.remove('border-slate-300', 'dark:border-slate-600');
+                    }
+                });
+            }
+        });
+    </script>
+}
+

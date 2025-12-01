@@ -29,7 +29,8 @@ namespace OfficeNexus.ViewModels
         public string CurrentPassword { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "New password is required")]
-        [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
+        [RegularExpression(@"^(?=.*\d).+$", ErrorMessage = "Password must contain at least one digit")]
         [DataType(DataType.Password)]
         [Display(Name = "New Password")]
         public string NewPassword { get; set; } = string.Empty;
@@ -77,5 +78,42 @@ namespace OfficeNexus.ViewModels
         [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
         [Display(Name = "Home Address")]
         public string HomeAddress { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// View model for bank account details
+    /// </summary>
+    public class BankDetailsViewModel
+    {
+        public int? Id { get; set; }
+
+        [Required(ErrorMessage = "Bank name is required")]
+        [StringLength(100, ErrorMessage = "Bank name cannot exceed 100 characters")]
+        [Display(Name = "Bank Name")]
+        public string BankName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Account title is required")]
+        [StringLength(100, ErrorMessage = "Account title cannot exceed 100 characters")]
+        [Display(Name = "Account Title")]
+        public string AccountTitle { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "IBAN is required")]
+        [Display(Name = "IBAN")]
+        public string IBAN { get; set; } = string.Empty;
+
+        [StringLength(20, MinimumLength = 14, ErrorMessage = "Account number must be between 14 and 20 digits")]
+        [RegularExpression(@"^\d{14,20}$", ErrorMessage = "Account number must contain only digits (14-20 digits)")]
+        [Display(Name = "Account Number")]
+        public string? AccountNumber { get; set; }
+
+        [StringLength(4, MinimumLength = 4, ErrorMessage = "Branch code must be exactly 4 digits")]
+        [RegularExpression(@"^\d{4}$", ErrorMessage = "Branch code must contain exactly 4 digits")]
+        [Display(Name = "Branch Code")]
+        public string? BranchCode { get; set; }
+
+        [Required(ErrorMessage = "CNIC is required")]
+        [RegularExpression(@"^\d{5}-\d{7}-\d{1}$", ErrorMessage = "CNIC must be in format XXXXX-XXXXXXX-X (e.g., 35202-1234567-1)")]
+        [Display(Name = "CNIC")]
+        public string CNIC { get; set; } = string.Empty;
     }
 }

@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - OfficeNexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize dark mode from localStorage on page load
+        (function() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         [x-cloak] { display: none !important; }
@@ -32,13 +46,13 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 antialiased" x-data="{ sidebarOpen: true, mobileMenuOpen: false }">
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-slate-800 dark:text-slate-100 antialiased" x-data="{ sidebarOpen: true, mobileMenuOpen: false }">
     
     <div class="flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
         <aside 
-            class="fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200 transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
+            class="fixed inset-y-0 left-0 z-50 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0"
             :class="{
                 'w-64': sidebarOpen,
                 'w-20': !sidebarOpen,
@@ -65,14 +79,14 @@
             </div>
             
             <!-- User Profile -->
-            <div class="p-4 border-b border-slate-200 bg-slate-50">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
                 <div class="flex items-center gap-3 justify-center" :class="{'flex-col': !sidebarOpen}">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-white font-semibold shadow-md flex-shrink-0">
                         @(User.Identity?.Name?.Substring(0, 2).ToUpper() ?? "EM")
                     </div>
                     <div class="flex-1 min-w-0" x-show="sidebarOpen" x-cloak>
-                        <p class="text-sm font-semibold text-slate-900 truncate">@User.Identity?.Name</p>
-                        <p class="text-xs text-slate-500 truncate">Employee</p>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">@User.Identity?.Name</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">Employee</p>
                     </div>
                 </div>
             </div>
@@ -80,7 +94,7 @@
             <!-- Navigation -->
             <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                 <a asp-controller="Employee" asp-action="Dashboard" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700")"
                    :class="{'justify-center': !sidebarOpen}"
                    :title="!sidebarOpen ? 'Dashboard' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +104,7 @@
                 </a>
                 
                 <a asp-controller="Task" asp-action="MyTasks" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700")"
                    :class="{'justify-center': !sidebarOpen}"
                    :title="!sidebarOpen ? 'My Tasks' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +114,7 @@
                 </a>
                 
                 <a asp-controller="Leave" asp-action="MyLeaves" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leave" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Leave" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700")"
                    :class="{'justify-center': !sidebarOpen}"
                    :title="!sidebarOpen ? 'My Leaves' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +124,7 @@
                 </a>
                 
                 <a asp-controller="Employee" asp-action="Profile" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-100")"
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700")"
                    :class="{'justify-center': !sidebarOpen}"
                    :title="!sidebarOpen ? 'My Profile' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,12 +132,22 @@
                     </svg>
                     <span x-show="sidebarOpen" x-cloak>My Profile</span>
                 </a>
+                
+                <a asp-controller="Employee" asp-action="BankDetails" 
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg @(ViewContext.RouteData.Values["Action"]?.ToString() == "BankDetails" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700")"
+                   :class="{'justify-center': !sidebarOpen}"
+                   :title="!sidebarOpen ? 'Bank Details' : ''">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span x-show="sidebarOpen" x-cloak>Bank Details</span>
+                </a>
             </nav>
             
             <!-- Logout -->
-            <div class="p-3 border-t border-slate-200">
+            <div class="p-3 border-t border-slate-200 dark:border-slate-700">
                 <a asp-controller="Auth" asp-action="Logout" 
-                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                   class="sidebar-link flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
                    :class="{'justify-center': !sidebarOpen}"
                    :title="!sidebarOpen ? 'Sign Out' : ''">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,21 +176,21 @@
         <div class="flex flex-col flex-1 overflow-hidden">
             
             <!-- Top Bar -->
-            <header class="bg-white border-b border-slate-200 shadow-sm z-10">
+            <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm z-10">
                 <div class="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-4">
                         <button 
                             @@click="mobileMenuOpen = !mobileMenuOpen"
-                            class="lg:hidden p-2 rounded-md text-slate-600 hover:bg-slate-100">
+                            class="lg:hidden p-2 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        <h1 class="text-xl font-bold text-slate-900">@ViewData["Title"]</h1>
+                        <h1 class="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">@(ViewData["Title"] ?? "Page")</h1>
                     </div>
                     
                     <div class="flex items-center gap-4">
-                        <div class="hidden sm:flex items-center gap-2 text-sm text-slate-600">
+                        <div class="hidden sm:flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                             <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                             </svg>
@@ -176,7 +200,7 @@
                         <!-- Notification Bell Icon -->
                         @await Component.InvokeAsync("Notification")
                         
-                        <div class="text-sm text-slate-500">
+                        <div class="text-sm text-slate-500 dark:text-slate-400">
                             @DateTime.Now.ToString("MMM dd, yyyy")
                         </div>
                     </div>
@@ -184,15 +208,15 @@
             </header>
             
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100">
+            <main class="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                 <div class="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
                     @RenderBody()
                 </div>
             </main>
             
             <!-- Footer -->
-            <footer class="bg-white border-t border-slate-200 py-4">
-                <div class="px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+            <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-4">
+                <div class="px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500 dark:text-slate-400">
                     &copy; 2025 OfficeNexus. All rights reserved.
                 </div>
             </footer>

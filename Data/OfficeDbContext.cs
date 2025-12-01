@@ -130,6 +130,7 @@ namespace OfficeNexus.Data
         public DbSet<TaskSubmission> TaskSubmissions { get; set; }
         public DbSet<TaskAssignment> TaskAssignments { get; set; }
         public DbSet<LoginAttempt> LoginAttempts { get; set; }
+        public DbSet<UserBankAccount> UserBankAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -137,6 +138,11 @@ namespace OfficeNexus.Data
             // but we ensure unique emails here.
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
+                .IsUnique();
+
+            // Ensure one bank account per user
+            modelBuilder.Entity<UserBankAccount>()
+                .HasIndex(uba => uba.UserId)
                 .IsUnique();
         }
     }

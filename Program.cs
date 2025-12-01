@@ -76,6 +76,49 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<OfficeDbContext>();
     db.Database.EnsureCreated(); // Creates DB if not exists
+    
+    // Ensure UserBankAccounts table exists (for existing databases)
+    try
+    {
+        // Check if table exists by trying to query it
+        var tableExists = false;
+        try
+        {
+            db.Database.ExecuteSqlRaw("SELECT 1 FROM UserBankAccounts LIMIT 1");
+            tableExists = true;
+        }
+        catch
+        {
+            tableExists = false;
+        }
+        
+        if (!tableExists)
+        {
+            // Create UserBankAccounts table if it doesn't exist
+            db.Database.ExecuteSqlRaw(@"
+                CREATE TABLE IF NOT EXISTS ""UserBankAccounts"" (
+                    ""Id"" INTEGER NOT NULL CONSTRAINT ""PK_UserBankAccounts"" PRIMARY KEY AUTOINCREMENT,
+                    ""UserId"" INTEGER NOT NULL,
+                    ""BankName"" TEXT NOT NULL,
+                    ""AccountTitle"" TEXT NOT NULL,
+                    ""IBAN"" TEXT NOT NULL,
+                    ""AccountNumber"" TEXT NULL,
+                    ""BranchCode"" TEXT NULL,
+                    ""CNIC"" TEXT NOT NULL,
+                    ""CreatedAt"" TEXT NOT NULL,
+                    ""UpdatedAt"" TEXT NULL,
+                    CONSTRAINT ""FK_UserBankAccounts_Users_UserId"" FOREIGN KEY (""UserId"") REFERENCES ""Users"" (""Id"") ON DELETE CASCADE
+                );
+                
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_UserBankAccounts_UserId"" ON ""UserBankAccounts"" (""UserId"");
+            ");
+            Console.WriteLine("✅ Created UserBankAccounts table");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ Error checking/creating UserBankAccounts table: {ex.Message}");
+    }
 
     if (!db.Users.Any(u => u.Role == UserRole.Admin))
     {
