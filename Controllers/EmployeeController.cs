@@ -461,7 +461,7 @@ namespace OfficeNexus.Controllers
                         model.AccountNumber = SecurityHelper.Decrypt(bankAccount.AccountNumber);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // If decryption fails, it might be old unencrypted data or corrupted data
                     // Log the error and show a message to the user

@@ -384,9 +384,9 @@ namespace OfficeNexus.Controllers
                                 var basicSalaryStr = worksheet.Cells[row, headers["BasicSalary"]].Value?.ToString()?.Trim() ?? "";
                                 var phoneNumber = worksheet.Cells[row, headers["PhoneNumber"]].Value?.ToString()?.Trim() ?? "";
                                 var homeAddress = worksheet.Cells[row, headers["HomeAddress"]].Value?.ToString()?.Trim() ?? "";
-                                var password = headers.ContainsKey("Password") 
-                                    ? worksheet.Cells[row, headers["Password"]].Value?.ToString()?.Trim() ?? "ChangeMe123!"
-                                    : "ChangeMe123!";
+                                // Always use default password for bulk imported employees
+                                // They can change it after first login
+                                var password = "ChangeMe123!";
 
                                 // Skip completely empty rows
                                 if (string.IsNullOrWhiteSpace(fullName) && string.IsNullOrWhiteSpace(email))
@@ -491,7 +491,8 @@ namespace OfficeNexus.Controllers
             string department, 
             decimal basicSalary,
             string phoneNumber,
-            string homeAddress)
+            string homeAddress,
+            string? password)
         {
             var employee = await _context.Users.FindAsync(id);
             if (employee == null || employee.Role != UserRole.Employee)
@@ -505,6 +506,26 @@ namespace OfficeNexus.Controllers
             {
                 TempData["Error"] = "Email already exists!";
                 return RedirectToAction("EditEmployee", new { id });
+            }
+
+            // Password validation if provided
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                if (password.Length < 8)
+                {
+                    TempData["Error"] = "Password must be at least 8 characters long";
+                    return RedirectToAction("EditEmployee", new { id });
+                }
+
+                if (!System.Text.RegularExpressions.Regex.IsMatch(password, @"\d"))
+                {
+                    TempData["Error"] = "Password must contain at least one digit";
+                    return RedirectToAction("EditEmployee", new { id });
+                }
+
+                // Update password if provided
+                employee.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                employee.SecurityStamp = Guid.NewGuid().ToString(); // Invalidate existing sessions
             }
 
             // Update employee fields
@@ -529,7 +550,51 @@ namespace OfficeNexus.Controllers
 
             await _context.SaveChangesAsync();
             
-            TempData["Success"] = $"Employee updated successfully. Status: {employee.Status}";
+            var message = $"Employee updated successfully. Status: {employee.Status}";
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                message += " Password has been updated.";
+            }
+            TempData["Success"] = message;
+            return RedirectToAction("EmployeeManagement");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteEmployee(int id)
+        {
+            var employee = await _context.Users.FindAsync(id);
+            if (employee == null || employee.Role != UserRole.Employee)
+            {
+                TempData["Error"] = "Employee not found.";
+                return RedirectToAction("EmployeeManagement");
+            }
+
+            // Prevent deleting admin users
+            if (employee.Role == UserRole.Admin)
+            {
+                TempData["Error"] = "Cannot delete admin users.";
+                return RedirectToAction("EmployeeManagement");
+            }
+
+            var employeeName = employee.FullName;
+
+            // Delete related records first (if any)
+            // Delete visitor logs
+            var visitorLogs = await _context.VisitorLogs.Where(v => v.EmployeeId == id).ToListAsync();
+            _context.VisitorLogs.RemoveRange(visitorLogs);
+
+            // Delete bank account if exists
+            var bankAccount = await _context.UserBankAccounts.FirstOrDefaultAsync(b => b.UserId == id);
+            if (bankAccount != null)
+            {
+                _context.UserBankAccounts.Remove(bankAccount);
+            }
+
+            // Delete the employee
+            _context.Users.Remove(employee);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Employee '{employeeName}' has been deleted successfully.";
             return RedirectToAction("EmployeeManagement");
         }
 

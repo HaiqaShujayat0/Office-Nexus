@@ -227,7 +227,7 @@
                         <li>Employees with <strong>all required fields</strong> will be imported with <span class="font-semibold text-green-700">Active</span> status</li>
                         <li>Employees with <strong>missing fields</strong> will be imported with <span class="font-semibold text-yellow-700">Pending</span> status</li>
                         <li>You can edit pending employees later to complete their information</li>
-                        <li>Default password "ChangeMe123!" will be used if Password column is missing or empty</li>
+                        <li>All imported employees will have default password "ChangeMe123!" (they can change it after first login)</li>
                     </ul>
                 </div>
             </div>
@@ -334,7 +334,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a asp-action="EditEmployee" asp-route-id="@emp.Id" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                <button class="text-slate-600 hover:text-slate-900">Details</button>
+                                <button onclick="showDeleteConfirm(@emp.Id, '@emp.FullName')" class="text-red-600 hover:text-red-900">Delete</button>
                             </td>
                         </tr>
                     }
@@ -364,6 +364,80 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideDeleteConfirm()"></div>
+
+        <!-- Center modal -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg leading-6 font-medium text-slate-900" id="modal-title">
+                            Delete Employee
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-slate-500">
+                                Do you want to delete <span id="deleteEmployeeName" class="font-semibold text-slate-900"></span> from the system?
+                            </p>
+                            <p class="text-xs text-red-600 mt-2">
+                                This action cannot be undone. All associated data will be permanently removed.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <form id="deleteForm" method="POST" asp-action="DeleteEmployee">
+                    <input type="hidden" id="deleteEmployeeId" name="id" value="" />
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Yes, Delete
+                    </button>
+                </form>
+                <button type="button" onclick="hideDeleteConfirm()" class="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deleteEmployeeId = null;
+
+    function showDeleteConfirm(id, name) {
+        deleteEmployeeId = id;
+        document.getElementById('deleteEmployeeId').value = id;
+        // Safely set the employee name (handles special characters)
+        const nameElement = document.getElementById('deleteEmployeeName');
+        nameElement.textContent = name || 'this employee';
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function hideDeleteConfirm() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        deleteEmployeeId = null;
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            hideDeleteConfirm();
+        }
+    });
+</script>
 
 <script>
     function togglePassword(inputId) {
