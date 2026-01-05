@@ -17,7 +17,8 @@ namespace OfficeNexus.Helpers
         // TODO: In production, load these from configuration (appsettings.json, Azure Key Vault, etc.)
         // For now, using static values. In production, these MUST be externalized.
         // Key must be exactly 32 bytes (256 bits) for AES-256
-        private static readonly byte[] EncryptionKey = Encoding.UTF8.GetBytes("OfficeNexusBankEncryptionKey256!!"); // 32 bytes
+        // NOTE: This test key is exactly 32 ASCII characters -> 32 bytes.
+        private static readonly byte[] EncryptionKey = Encoding.UTF8.GetBytes("0123456789ABCDEF0123456789ABCDEF");
         
         // IV (Initialization Vector) must be exactly 16 bytes (128 bits) for AES
         private static readonly byte[] EncryptionIV = Encoding.UTF8.GetBytes("OfficeNexusIV16!"); // 16 bytes
